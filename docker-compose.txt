@@ -1,0 +1,1 @@
+PS C:\Users\alber\Desktop\UniTn\Data Science\Second_Semester\Big_data\Project> docker-compose up -d

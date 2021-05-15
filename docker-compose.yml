@@ -1,0 +1,17 @@
+version: '3.1'
+
+services:
+
+  mysql:
+    image: mysql:5.7
+    container_name: "river-mysql"
+    volumes:
+      - ./data/mysql:/var/lib/mysql # map the content. stop the mysql without loosing the data
+    ports:
+      - 3310:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: "password"
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "password"
+
+# river-mysql | Version: '5.7.34'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server (GPL)

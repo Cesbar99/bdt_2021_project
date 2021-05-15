@@ -1,5 +1,4 @@
-#changing
-######
+
 from __future__ import absolute_import, annotations
 
 import os
@@ -8,6 +7,9 @@ import time
 from datetime import datetime
 from typing import List, Optional
 import requests
+import sqlite3
+import textwrap
+import pyodbc
 
 ''' DA AGGIUNGERE AI DATI STORICI
 id, stagione
@@ -96,7 +98,7 @@ class Time_Stamp:
     def to_repr(self) -> str:
         return self.time_stamp
     
-    def time_conversion(data:str):
+    def time_conversion(data):
         data = data.split('T')
         date = str(data[0])
         time = str(data[1])[:-3]
@@ -148,8 +150,7 @@ class raw_rivers:
         return raw_rivers(
             Id if Id else ID.to_repr(ID(raw_data['SCODE'])) ,
             Name.to_repr(Name(raw_data['SCODE'])),
-            #datetime.strptime( Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), '%Y-%m-%d %H:%M:%S' ),
-            Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])),
+            datetime.strptime( Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), '%Y-%m-%d %H:%M:%S' ),
             raw_data['TYPE'],
             raw_data['VALUE'],
             stagione if stagione else Stagione.to_repr(Stagione(raw_data['DATE']))
@@ -250,35 +251,6 @@ def get_rivers(url:str):
     #return list_of_rivers
     return shrunk_rivers
 
-'''
-class RiverManager:
-
-    RIVERS_FILE = "rivers_file.json" ###MUST HAVE SAME NAME THAN FILE WITH HISTORICAL DATA
-    
-    def __init__(self) -> None:
-        if not os.path.isfile(self.RIVERS_FILE):
-            with open("rivers_file.json", "w") as f:
-                json.dump([], f)
-    
-    def save(self, rivers: List[Rivers]) -> None:
-        old_rivers = self.to_list()
-        update_rivers = old_rivers + rivers
-
-        with open("rivers_file.json", "w") as f:
-            json.dump(
-                [Rivers.to_repr(river) for river in update_rivers],
-                f,
-                indent=4,
-                default=str,
-                ensure_ascii=False
-            )
-
-    def to_list(self) -> List[Rivers]:
-        with open("rivers_file.json", "r") as f:
-            fiumi = json.load(f)
-            return [Rivers.from_repr(fiume) for fiume in fiumi]
-'''
-
 class Manager_dati_storici:
     def manage_dati_storici():
         with open('dati_for_tentativo.json', 'r+', encoding = 'utf-8') as f:
@@ -322,6 +294,187 @@ class Manager_dati_storici:
         lista_of_rivers = sorted(lista_of_rivers, key=lambda river: river.timestamp())
         return lista_of_rivers
 
+class SQLAzureRivers:
+    server_name = 'server-fiumi-bdt-2021' 
+    server = '{server_name}.database.windows.net,1433'.format(server_name=server_name)
+    database = 'database_fiumi_bdt_2021' 
+    username = 'nome_utente' 
+    password = '_Password'   
+    driver= '{ODBC Driver 17 for SQL Server}'
+
+    connection_string = textwrap.dedent('''
+        Driver={driver};
+        Server={server};
+        Database={database};
+        Uid={username};
+        Pwd={password};
+        Encrypt=yes;
+        TrustServerCertificate=no;
+        Connection Timeout=30;
+    '''.format(
+        driver=driver,
+        server=server,
+        database=database,
+        username=username,
+        password=password 
+        ))
+    
+    def query_table(nome_tabella:str) -> str:
+        create_table_query = '''
+        CREATE TABLE {table_name}
+        (
+            Id INT ,
+            Q_mean NUMERIC NOT NULL,
+            W_mean NUMERIC NOT NULL,
+            WT_mean  NUMERIC NOT NULL,
+            Timestamp DATETIME NOT NULL,
+            Stagione NVARCHAR(128) NOT NULL
+        )
+        '''.format(table_name = nome_tabella)
+
+        return create_table_query
+
+    def query_insert(nome_tabella:str) -> str:
+        insert_query = '''
+        INSERT into {table_name}(id, Q_mean, W_mean, WT_mean,Timestamp, Stagione) VALUES (?,?,?,?,?,?)
+        '''.format(table_name = nome_tabella)
+
+        return insert_query
+
+    def from_table_to_name(table_name):
+
+        if table_name == 'Tabella_Isarco':
+            name = "EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD"
+        elif table_name == 'Tabella_Adige':
+            name = 'ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE'
+        else:
+            name = "TALFER BEI BOZEN/TALVERA A BOLZANO"
+        return name
+
+    def from_name_to_table(name:str) -> str:
+
+        if name == "EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD":
+            table_name = 'Tabella_Isarco'
+        elif name == 'ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE':
+            table_name = 'Tabella_Adige'
+        else:
+            table_name = 'Tabella_Talvera'
+        return table_name
+
+    def create(self) -> None:
+
+        #table_name_fiumi = 'Tabella_fiumi' 
+        nomi_tabelle = ['Tabella_Adige', 'Tabella_Isarco','Tabella_Talvera']
+
+        table_names = 'Tabella_nomi'
+        create_table_names_query = '''
+        CREATE TABLE {table_name}
+        (
+            Id INT ,
+            Name NVARCHAR(128) NOT NULL,
+        )
+        '''.format(table_name = table_names)
+
+        cnxn: pyodbc.Connection = pyodbc.connect(self.connection_string)
+        crsr: pyodbc.Cursor = cnxn.cursor()
+
+        for table_name in nomi_tabelle:
+            crsr.execute(SQLAzureRivers.query_table(table_name))
+            crsr.commit()
+            
+        crsr.execute(create_table_names_query)
+        crsr.commit()
+
+        names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
+        query = 'INSERT INTO Tabella_nomi(id, Name) VALUES (?, ?)'
+
+        for i in range(1, 4):
+            crsr.execute(query, (i, names[i-1]) )
+            crsr.commit()
+
+        cnxn.close()
+    '''
+    def save(self, rivers:List[Rivers]) -> None:
+
+        cnxn: pyodbc.Connection = pyodbc.connect(self.connection_string)
+        crsr: pyodbc.Cursor = cnxn.cursor()
+
+        for river in rivers:
+            table_name = SQLAzureRivers.from_name_to_table(river.name())
+            query = SQLAzureRivers.query_insert(table_name)
+
+            #crsr.execute('SET IDENTITY_INSERT Fiumi_try ON')
+            crsr.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
+            crsr.commit()
+
+        cnxn.close()
+    '''
+
+    def save(self, river:Rivers) -> None:
+
+        cnxn: pyodbc.Connection = pyodbc.connect(self.connection_string)
+        crsr: pyodbc.Cursor = cnxn.cursor()
+
+        table_name = SQLAzureRivers.from_name_to_table(river.name())
+        query = SQLAzureRivers.query_insert(table_name)
+
+        #crsr.execute('SET IDENTITY_INSERT Fiumi_try ON')
+        crsr.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
+        crsr.commit()
+
+        cnxn.close()
+        
+    def from_db_to_list(self, table_name) -> List[Rivers]:
+        cnxn: pyodbc.Connection = pyodbc.connect(self.connection_string)
+        crsr: pyodbc.Cursor = cnxn.cursor()
+
+        query1 = 'SELECT * from {tabella}'.format(tabella = table_name)
+
+        crsr.execute(query1)
+        rows = crsr.fetchall()
+
+        rivers = []
+        for Id, Q_mean, W_mean, WT_mean,Timestamp, Stagione in rows:
+            query2 = 'SELECT Name FROM Tabella_nomi WHERE Id = {id}'.format(id = Id)
+            crsr.execute(query2)
+            name = crsr.fetchall()[0][0]
+            rivers.append(
+                Rivers(Timestamp, name , Stagione, Id, Q_mean, W_mean, WT_mean) 
+            )
+        
+        cnxn.close()
+
+        return rivers
+
+'''
+class RiverManager:
+
+    RIVERS_FILE = "rivers_file.json" ###MUST HAVE SAME NAME THAN FILE WITH HISTORICAL DATA
+    
+    def __init__(self) -> None:
+        if not os.path.isfile(self.RIVERS_FILE):
+            with open("rivers_file.json", "w") as f:
+                json.dump([], f)
+    
+    def save(self, rivers: List[Rivers]) -> None:
+        old_rivers = self.to_list()
+        update_rivers = old_rivers + rivers
+
+        with open("rivers_file.json", "w") as f:
+            json.dump(
+                [Rivers.to_repr(river) for river in update_rivers],
+                f,
+                indent=4,
+                default=str,
+                ensure_ascii=False
+            )
+
+    def to_list(self) -> List[Rivers]:
+        with open("rivers_file.json", "r") as f:
+            fiumi = json.load(f)
+            return [Rivers.from_repr(fiume) for fiume in fiumi]
+'''
+
 '''
 class SQLliteRiverManager:
     DB_NAME = 'C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech/database_fiumi.db' 
@@ -353,32 +506,5 @@ class SQLliteRiverManager:
         conn.close()
 
         return rivers
-
-#new_rivers = get_rivers('http://dati.retecivica.bz.it/services/meteo/v1/sensors')
-
-#x = Stagione.from_date_to_season("2021-04-19 00:00:00")
-#print(x)
 '''
-'''
-print(len(new_rivers))
-print(type(new_rivers))
-print(type(new_rivers[0]))
-'''
-'''
-list_represented_raw_rivers = [raw_rivers.to_repr(raw_river) for raw_river in new_rivers]
-#print(list_represented_raw_rivers)
-
-shrunk_rivers = []
-names = ['ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE', 'TALFER BEI BOZEN/TALVERA A BOLZANO', 'EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD']
-
-for name in names:
-    shrunk_rivers.append( shrink.to_repr(shrink(list_represented_raw_rivers,name))  )
-
-
-list_of_rivers = [Rivers.from_repr(shrunk_river) for shrunk_river in shrunk_rivers]
-'''
-#list_of_represented_rivers = [Rivers.to_repr(river) for river in new_rivers]
-#print(list_of_represented_rivers)
-#RiverManager()
-#print(new_rivers)
 

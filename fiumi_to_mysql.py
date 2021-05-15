@@ -28,7 +28,7 @@ print(historic_repr_rivers)
 #manager.save(historic_list_rivers)
 '''
 ###use while and time.sleep()
-'''
+
 url = 'http://dati.retecivica.bz.it/services/meteo/v1/sensors'
 new_rivers = get_rivers(url)
 list_of_rivers = [Rivers.from_repr(new_river) for new_river in new_rivers] 
@@ -36,7 +36,7 @@ list_of_rivers = sorted(list_of_rivers, key=lambda river: river.get_id()) ### LI
 
 manager.save(historic_list_rivers)
 manager.save(list_of_rivers)
-'''
+
 
 
 

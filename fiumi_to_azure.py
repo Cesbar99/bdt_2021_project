@@ -11,35 +11,30 @@ import pyodbc
 import textwrap
 import pyodbc
 
-from dati_fiumi import raw_rivers
+from dati_fiumi import MYSQLRivers, raw_rivers
 from dati_fiumi import Rivers
 from dati_fiumi import get_rivers
-from dati_fiumi import Manager_dati_storici
-from dati_fiumi import SQLAzureRivers
+from mqtt_fiumi_process import Manager_dati_storici
 
 
-os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech')
-'''
-manager = SQLAzureRivers()
+
+#os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech')
+
+manager = MYSQLRivers()
+
 #manager.create()
-
-historic_list_rivers = Manager_dati_storici.manage_dati_storici()
+#historic_list_rivers = Manager_dati_storici.manage_dati_storici()
 #historic_repr_rivers = [Rivers.to_repr(river) for river in historic_list_rivers]
-
 #anager.save(historic_list_rivers) ### scrivere per azure
-
 ###use while and time.sleep()
 
-url = 'http://dati.retecivica.bz.it/services/meteo/v1/sensors'
+"""url = 'http://dati.retecivica.bz.it/services/meteo/v1/sensors'
 new_rivers = get_rivers(url)
 list_of_rivers = [Rivers.from_repr(new_river) for new_river in new_rivers] 
 list_of_rivers = sorted(list_of_rivers, key=lambda river: river.get_id()) ### LISTA ORDINATA PER ID: ISARCO, ADIGE, TALVERA
+for river in list_of_rivers:
+    manager.save(river)"""
 
-#manager.save(list_of_rivers) 
-'''
-
-
-####
 
 create_table_query = '''
 CREATE TABLE Fiumi_tentativo
@@ -82,8 +77,8 @@ connection_string = textwrap.dedent('''
         ))
 
 
-cnxn: pyodbc.Connection = pyodbc.connect(connection_string)
-crsr: pyodbc.Cursor = cnxn.cursor()
+#cnxn: pyodbc.Connection = pyodbc.connect(connection_string)
+#crsr: pyodbc.Cursor = cnxn.cursor()
 #crs.execute(create_table_query)
 #crsr.commit()
 '''
@@ -99,7 +94,7 @@ for Id, Q_mean, W_mean, WT_mean,Timestamp, Stagione in rows:
     print(name)
     rivers.append(Rivers.to_repr(Rivers(Timestamp, name , Stagione, Id, Q_mean, W_mean, WT_mean)) )
 '''
-cnxn.close()
+#cnxn.close()
 #print(rivers[0]['TimeStamp'])
 
 

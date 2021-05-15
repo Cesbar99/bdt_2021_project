@@ -1,11 +1,13 @@
 
 from __future__ import absolute_import, annotations
-
+import mysql.connector
+from mysql.connector import connection
 import os
 import json
 import time
 from datetime import datetime
 from typing import List, Optional
+from mysql.connector import cursor
 import requests
 import sqlite3
 import textwrap
@@ -36,7 +38,7 @@ new_rivers = [d1, d2, d3]
 print(new_rivers)
 '''
 
-os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech')
+# os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech')
 
 class Name:
     def __init__(self, scode:str):
@@ -249,6 +251,9 @@ def get_rivers(url:str):
         shrunk_rivers.append( shrink.to_repr(shrink(list_represented_raw_rivers,name))  )
     #list_of_rivers = [Rivers.from_repr(shrunk_river) for shrunk_river in shrunk_rivers]
     #return list_of_rivers
+
+
+    
     return shrunk_rivers
 
 class Manager_dati_storici:
@@ -294,31 +299,50 @@ class Manager_dati_storici:
         lista_of_rivers = sorted(lista_of_rivers, key=lambda river: river.timestamp())
         return lista_of_rivers
 
-class SQLAzureRivers:
-    server_name = 'server-fiumi-bdt-2021' 
-    server = '{server_name}.database.windows.net,1433'.format(server_name=server_name)
-    database = 'database_fiumi_bdt_2021' 
-    username = 'nome_utente' 
-    password = '_Password'   
-    driver= '{ODBC Driver 17 for SQL Server}'
-
-    connection_string = textwrap.dedent('''
-        Driver={driver};
-        Server={server};
-        Database={database};
-        Uid={username};
-        Pwd={password};
-        Encrypt=yes;
-        TrustServerCertificate=no;
-        Connection Timeout=30;
-    '''.format(
-        driver=driver,
-        server=server,
-        database=database,
-        username=username,
-        password=password 
-        ))
+class MYSQLRivers:
     
+    def __init__(self)-> None:
+        self.connection = mysql.connector.connect(
+        host= '127.0.0.1',
+        port=  3310,
+        database = 'rivers_db',
+        user = 'root',
+        password = 'password'
+        )
+        self.connection.autocommit = True
+    
+    def save(self, river:Rivers) -> None:
+    
+        cursor = self.connection.cursor()
+
+        table_name = MYSQLRivers.from_name_to_table(river.name())
+        query = MYSQLRivers.query_insert(table_name)    
+        cursor.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
+    
+        cursor.close()
+        
+    
+    def from_db_to_list(self, table_name) -> List[Rivers]:
+        cursor = self.connection.cursor()
+
+        query1 = 'SELECT * from {tabella}'.format(tabella = table_name)
+
+        cursor.execute(query1)
+        rows = cursor.fetchall()
+
+        rivers = []
+        for Id, Q_mean, W_mean, WT_mean,Timestamp, Stagione in rows:
+            query2 = 'SELECT Name FROM Tabella_nomi WHERE Id = {id}'.format(id = Id)
+            cursor.execute(query2)
+            name = cursor.fetchall()[0][0]
+            rivers.append(
+                Rivers(Timestamp, name , Stagione, Id, Q_mean, W_mean, WT_mean) 
+            )
+        
+        cursor.close()
+
+        return rivers
+
     def query_table(nome_tabella:str) -> str:
         create_table_query = '''
         CREATE TABLE {table_name}
@@ -331,12 +355,12 @@ class SQLAzureRivers:
             Stagione NVARCHAR(128) NOT NULL
         )
         '''.format(table_name = nome_tabella)
-
+        
         return create_table_query
 
     def query_insert(nome_tabella:str) -> str:
         insert_query = '''
-        INSERT into {table_name}(id, Q_mean, W_mean, WT_mean,Timestamp, Stagione) VALUES (?,?,?,?,?,?)
+        INSERT into {table_name}(Id, Q_mean, W_mean, WT_mean,Timestamp, Stagione) VALUES (%s,%s,%s,%s,%s,%s)
         '''.format(table_name = nome_tabella)
 
         return insert_query
@@ -362,8 +386,9 @@ class SQLAzureRivers:
         return table_name
 
     def create(self) -> None:
-
-        #table_name_fiumi = 'Tabella_fiumi' 
+        
+        cursor = self.connection.cursor()
+        # table_name_fiumi = 'Tabella_fiumi' 
         nomi_tabelle = ['Tabella_Adige', 'Tabella_Isarco','Tabella_Talvera']
 
         table_names = 'Tabella_nomi'
@@ -375,136 +400,27 @@ class SQLAzureRivers:
         )
         '''.format(table_name = table_names)
 
-        cnxn: pyodbc.Connection = pyodbc.connect(self.connection_string)
-        crsr: pyodbc.Cursor = cnxn.cursor()
+        
 
         for table_name in nomi_tabelle:
-            crsr.execute(SQLAzureRivers.query_table(table_name))
-            crsr.commit()
+            cursor.execute(MYSQLRivers.query_table(table_name))
+            cursor.commit()
             
-        crsr.execute(create_table_names_query)
-        crsr.commit()
+        cursor.execute(create_table_names_query)
+        cursor.commit()
 
         names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
-        query = 'INSERT INTO Tabella_nomi(id, Name) VALUES (?, ?)'
+        query = 'INSERT INTO Tabella_nomi(id, Name) VALUES (%s, %s)'
 
         for i in range(1, 4):
-            crsr.execute(query, (i, names[i-1]) )
-            crsr.commit()
+            cursor.execute(query, (i, names[i-1]) )
+            cursor.commit()
 
-        cnxn.close()
-    '''
-    def save(self, rivers:List[Rivers]) -> None:
+        cursor.close()
+        connection.close()
 
-        cnxn: pyodbc.Connection = pyodbc.connect(self.connection_string)
-        crsr: pyodbc.Cursor = cnxn.cursor()
-
-        for river in rivers:
-            table_name = SQLAzureRivers.from_name_to_table(river.name())
-            query = SQLAzureRivers.query_insert(table_name)
-
-            #crsr.execute('SET IDENTITY_INSERT Fiumi_try ON')
-            crsr.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
-            crsr.commit()
-
-        cnxn.close()
-    '''
-
-    def save(self, river:Rivers) -> None:
-
-        cnxn: pyodbc.Connection = pyodbc.connect(self.connection_string)
-        crsr: pyodbc.Cursor = cnxn.cursor()
-
-        table_name = SQLAzureRivers.from_name_to_table(river.name())
-        query = SQLAzureRivers.query_insert(table_name)
-
-        #crsr.execute('SET IDENTITY_INSERT Fiumi_try ON')
-        crsr.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
-        crsr.commit()
-
-        cnxn.close()
-        
-    def from_db_to_list(self, table_name) -> List[Rivers]:
-        cnxn: pyodbc.Connection = pyodbc.connect(self.connection_string)
-        crsr: pyodbc.Cursor = cnxn.cursor()
-
-        query1 = 'SELECT * from {tabella}'.format(tabella = table_name)
-
-        crsr.execute(query1)
-        rows = crsr.fetchall()
-
-        rivers = []
-        for Id, Q_mean, W_mean, WT_mean,Timestamp, Stagione in rows:
-            query2 = 'SELECT Name FROM Tabella_nomi WHERE Id = {id}'.format(id = Id)
-            crsr.execute(query2)
-            name = crsr.fetchall()[0][0]
-            rivers.append(
-                Rivers(Timestamp, name , Stagione, Id, Q_mean, W_mean, WT_mean) 
-            )
-        
-        cnxn.close()
-
-        return rivers
-
-'''
-class RiverManager:
-
-    RIVERS_FILE = "rivers_file.json" ###MUST HAVE SAME NAME THAN FILE WITH HISTORICAL DATA
     
-    def __init__(self) -> None:
-        if not os.path.isfile(self.RIVERS_FILE):
-            with open("rivers_file.json", "w") as f:
-                json.dump([], f)
     
-    def save(self, rivers: List[Rivers]) -> None:
-        old_rivers = self.to_list()
-        update_rivers = old_rivers + rivers
 
-        with open("rivers_file.json", "w") as f:
-            json.dump(
-                [Rivers.to_repr(river) for river in update_rivers],
-                f,
-                indent=4,
-                default=str,
-                ensure_ascii=False
-            )
 
-    def to_list(self) -> List[Rivers]:
-        with open("rivers_file.json", "r") as f:
-            fiumi = json.load(f)
-            return [Rivers.from_repr(fiume) for fiume in fiumi]
-'''
-
-'''
-class SQLliteRiverManager:
-    DB_NAME = 'C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech/database_fiumi.db' 
-
-    def save(self, rivers: List[Rivers]) -> None:
-        conn = sqlite3.connect('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech/database_fiumi.db')
-        cursor = conn.cursor()
-        query = 'INSERT into Fiumi (id, Name, Q_mean, W_mean, WT_mean,Timestamp, Stagione) VALUES (?,?,?,?,?,?,?)'
-        
-        for river in rivers:
-            cursor.execute(query, (river.get_id(), river.name(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
-            conn.commit()
-        
-        conn.close()
-
-    def list(self) -> List[Rivers]:
-        conn = sqlite3.connect(self.DB_NAME)
-        cursor = conn.cursor()
-        query = 'SELECT * from Fiumi;'
-        cursor.execute(query)
-        rows = cursor.fetchall()
-
-        rivers = []
-        for id, Name, Q_mean, W_mean, WT_mean,Timestamp, Stagione in rows:
-            rivers.append(
-                Rivers(id, Name, Q_mean, W_mean, WT_mean,datetime.fromisoformat(Timestamp), Stagione)
-            )
-        
-        conn.close()
-
-        return rivers
-'''
-
+    

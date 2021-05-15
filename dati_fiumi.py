@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 from typing import List, Optional
 import requests
-import sqlite3
+
 ''' DA AGGIUNGERE AI DATI STORICI
 id, stagione
 '''
@@ -96,7 +96,7 @@ class Time_Stamp:
     def to_repr(self) -> str:
         return self.time_stamp
     
-    def time_conversion(data):
+    def time_conversion(data:str):
         data = data.split('T')
         date = str(data[0])
         time = str(data[1])[:-3]
@@ -148,7 +148,8 @@ class raw_rivers:
         return raw_rivers(
             Id if Id else ID.to_repr(ID(raw_data['SCODE'])) ,
             Name.to_repr(Name(raw_data['SCODE'])),
-            datetime.strptime( Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), '%Y-%m-%d %H:%M:%S' ),
+            #datetime.strptime( Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), '%Y-%m-%d %H:%M:%S' ),
+            Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])),
             raw_data['TYPE'],
             raw_data['VALUE'],
             stagione if stagione else Stagione.to_repr(Stagione(raw_data['DATE']))
@@ -321,7 +322,7 @@ class Manager_dati_storici:
         lista_of_rivers = sorted(lista_of_rivers, key=lambda river: river.timestamp())
         return lista_of_rivers
 
-
+'''
 class SQLliteRiverManager:
     DB_NAME = 'C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech/database_fiumi.db' 
 
@@ -357,6 +358,7 @@ class SQLliteRiverManager:
 
 #x = Stagione.from_date_to_season("2021-04-19 00:00:00")
 #print(x)
+'''
 '''
 print(len(new_rivers))
 print(type(new_rivers))

@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt #import the client1
 import time
 from datetime import datetime
 
-from dati_fiumi import Rivers, SQLAzureRivers
+from dati_fiumi import Rivers, MYSQLRivers
 
 ############
 '''
@@ -32,13 +32,14 @@ def on_message(client, userdata, message):
     #print("message received " ,str(message.payload.decode("utf-8")))
     #print('message received')
     #print(message.payload.decode())
+    manager = MYSQLRivers()
     dic = eval(message.payload.decode())
     river = Rivers.from_repr(dic)
     #print(dic['ID'], dic['NAME'])
     #print(dict(message.payload.decode())['Albergo'])
-    print(Rivers.to_repr(river))
-    #SQLAzureRivers.save(river)
-
+    #print(Rivers.to_repr(river))
+    manager.save(river)
+    
 ########################################
 
 #broker_address="broker.hivemq.com"

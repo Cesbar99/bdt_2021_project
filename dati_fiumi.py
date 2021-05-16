@@ -150,12 +150,12 @@ class raw_rivers:
         return raw_rivers(
             Id if Id else ID.to_repr(ID(raw_data['SCODE'])) ,
             Name.to_repr(Name(raw_data['SCODE'])),
-            datetime.strptime( Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), '%Y-%m-%d %H:%M:%S' ),
+            Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), #datetime.strptime( Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), '%Y-%m-%d %H:%M:%S' ),
             raw_data['TYPE'],
             raw_data['VALUE'],
             stagione if stagione else Stagione.to_repr(Stagione(raw_data['DATE']))
         )
-
+'''
 class shrink:
     def __init__(self, lista_9:list, name:str):
         self.diz_type_val = shrink.from_9_to_3(lista_9, name)
@@ -173,7 +173,7 @@ class shrink:
         diz_shrink['TimeStamp'] = diz['TimeStamp']
         diz_shrink['Stagione'] = diz['Stagione']
         return diz_shrink   
-
+'''
 
 ###RIVER CLASS: OUTPUT 3 DICTIONARIES TO ADD TO HISTORICAL DATA
 
@@ -223,7 +223,7 @@ class Rivers:
     def from_repr(diz: dict) -> Rivers:
 
         return Rivers(
-            diz['TimeStamp'],
+            diz['TimeStamp'], #Transform in date object
             diz['NAME'],
             diz['Stagione'],
             diz['ID'],
@@ -235,7 +235,7 @@ class Rivers:
 
 ###FUNZIONE GET
 ###URL: 'http://dati.retecivica.bz.it/services/meteo/v1/sensors'
-
+'''
 def get_rivers(url:str):
     response = requests.get(url)
     raw_fiumi = response.json()
@@ -250,6 +250,7 @@ def get_rivers(url:str):
     #list_of_rivers = [Rivers.from_repr(shrunk_river) for shrunk_river in shrunk_rivers]
     #return list_of_rivers
     return shrunk_rivers
+'''
 
 class Manager_dati_storici:
     def manage_dati_storici():

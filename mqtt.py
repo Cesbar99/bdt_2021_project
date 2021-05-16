@@ -36,7 +36,8 @@ def on_message(client, userdata, message):
     river = Rivers.from_repr(dic)
     #print(dic['ID'], dic['NAME'])
     #print(dict(message.payload.decode())['Albergo'])
-    SQLAzureRivers.save(river)
+    print(Rivers.to_repr(river))
+    #SQLAzureRivers.save(river)
 
 ########################################
 

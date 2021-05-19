@@ -493,12 +493,10 @@ class MYSQLRivers:
 
         table_names = 'Tabella_nomi'
         create_table_names_query = '''
-        CREATE TABLE {table_name}
-        (
+        CREATE TABLE {table_name} (
             Id INT ,
             Name NVARCHAR(128) NOT NULL,
-        )
-        '''.format(table_name = table_names)
+        )'''.format(table_name = table_names)
 
         for table_name in nomi_tabelle:
             cursor.execute(MYSQLRivers.query_table(table_name))
@@ -512,7 +510,7 @@ class MYSQLRivers:
             cursor.execute(query, (i, names[i-1]) )
 
         cursor.close()
-        connection.close()
+        
 
     
     

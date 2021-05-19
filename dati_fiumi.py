@@ -502,17 +502,14 @@ class MYSQLRivers:
 
         for table_name in nomi_tabelle:
             cursor.execute(MYSQLRivers.query_table(table_name))
-            cursor.commit()
             
         cursor.execute(create_table_names_query)
-        cursor.commit()
 
         names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
         query = 'INSERT INTO Tabella_nomi(Id, Name) VALUES (%s, %s)'
 
         for i in range(1, 4):
             cursor.execute(query, (i, names[i-1]) )
-            cursor.commit()
 
         cursor.close()
         connection.close()

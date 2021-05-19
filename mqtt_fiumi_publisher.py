@@ -23,7 +23,6 @@ while True:
 def publisher(dic:dict):
     client = mqtt.Client(client_id = 'fiumi-sender') #create a new client
     #client.usarename_ow_set('bdt-2021', '') #the broaker is protected by an authentication 
-    client.connect("mqtt.eclipseprojects.io") #define the host. 
+    client.connect("broker.emqx.io") #define the host. 
     client.publish('fiumi', str(dic)) # I can decide the Qos and if retain or not the message.
-        
-
+    

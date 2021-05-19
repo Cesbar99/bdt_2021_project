@@ -32,25 +32,25 @@ def on_message(client, userdata, message):
     #print("message received " ,str(message.payload.decode("utf-8")))
     #print('message received')
     #print(message.payload.decode())
-    manager = MYSQLRivers()
+    #manager = MYSQLRivers()
     dic = eval(message.payload.decode())
-    river = Rivers.from_repr(dic)
-    #print(dic['ID'], dic['NAME'])
-    #print(dict(message.payload.decode())['Albergo'])
-    print(Rivers.to_repr(river))
-    manager.save(river)
+    print(dic)
+    #river = Rivers.from_repr(dic)
+    #print(Rivers.to_repr(river))
+    #manager.save(river)
     
 ########################################
 
 #broker_address="broker.hivemq.com"
-broker_address="mqtt.eclipseprojects.io" #"iot.eclipse.org"
+broker_address= "broker.emqx.io" #"iot.eclipse.org"
 client = mqtt.Client('fiumi-storer') #client = mqtt.Client() create new instance ; client = mqtt.Client()
-client.on_message=on_message #attach function to callback
 client.connect(broker_address) #connect to broker
-#client.loop_start() #start the loop
 client.subscribe('fiumi') #client.subscribe('testtopic/#')
-#client.loop_stop()
+client.on_message=on_message #attach function to callback
 client.loop_forever()
+#client.loop_start() #start the loop
+#client.loop_stop()
+
 #time.sleep(10) # wait
 
 

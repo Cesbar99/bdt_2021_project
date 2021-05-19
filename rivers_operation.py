@@ -11,6 +11,7 @@ import pyodbc
 
 from dati_fiumi import MYSQLRivers, manager_dati_nuovi
 from dati_fiumi import Manager_dati_storici
+from mqtt_fiumi_publisher import publisher
 
 
 #os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech')
@@ -31,5 +32,4 @@ url = 'http://dati.retecivica.bz.it/services/meteo/v1/sensors'
 manager = manager_dati_nuovi()
 manager.manage_new_rivers(url)
 manager.publish_new_rivers()
-
 

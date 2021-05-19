@@ -322,6 +322,7 @@ class Manager_dati_storici:
     def publish_historic_river(self):
                         
         publisher(self.diz)
+        #print(self.diz)
 
     def add_season(diz:dict):
 
@@ -395,9 +396,15 @@ class manager_dati_nuovi:
                     self.dic3[river['TYPE']+'_mean'] = river['VALUE']
 
     def publish_new_rivers(self):
+       
         publisher(self.dic1)
         publisher(self.dic2)
         publisher(self.dic3)
+        '''
+        print(self.dic1)
+        print(self.dic2)
+        print(self.dic3)
+        '''
 
 class MYSQLRivers:
     

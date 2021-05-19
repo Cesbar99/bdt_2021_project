@@ -32,12 +32,11 @@ def on_message(client, userdata, message):
     #print("message received " ,str(message.payload.decode("utf-8")))
     #print('message received')
     #print(message.payload.decode())
-    #manager = MYSQLRivers()
+    manager = MYSQLRivers()
     dic = eval(message.payload.decode())
-    print(dic)
-    #river = Rivers.from_repr(dic)
+    river = Rivers.from_repr(dic)
     #print(Rivers.to_repr(river))
-    #manager.save(river)
+    manager.save(river)
     
 ########################################
 

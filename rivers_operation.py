@@ -9,11 +9,14 @@ from typing import List, Optional
 import requests
 import pyodbc
 
-from dati_fiumi import manager_dati_nuovi
+from dati_fiumi import MYSQLRivers, manager_dati_nuovi
 from dati_fiumi import Manager_dati_storici
 
 
 #os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech')
+
+manager_mysql = MYSQLRivers()
+manager_mysql.create()
 
 file = 'try_data.json' #substitute with real json with all historical data
 with open(file, 'r+', encoding = 'utf-8') as f: 

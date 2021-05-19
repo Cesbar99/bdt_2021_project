@@ -357,7 +357,7 @@ class manager_dati_nuovi:
         self.dic2 = {'NAME':'TALFER BEI BOZEN/TALVERA A BOLZANO'}
         self.dic3 = {'NAME':'EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD'}
         self.discriminants_scode = ["29850PG", "83450PG", "82910PG"]
-        self.iscriminants_type = ["Q", "W", "WT"]
+        self.discriminants_type = ["Q", "W", "WT"]
 
     def manage_new_rivers(self, url:str):
         response = requests.get(url)
@@ -508,7 +508,7 @@ class MYSQLRivers:
         cursor.commit()
 
         names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
-        query = 'INSERT INTO Tabella_nomi(id, Name) VALUES (%s, %s)'
+        query = 'INSERT INTO Tabella_nomi(Id, Name) VALUES (%s, %s)'
 
         for i in range(1, 4):
             cursor.execute(query, (i, names[i-1]) )

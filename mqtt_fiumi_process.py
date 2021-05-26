@@ -8,7 +8,6 @@ from typing import List, Optional
 import requests
 import sqlite3
 import textwrap
-import pyodbc
 
 from mqtt_fiumi_publisher import publisher
 from dati_fiumi import raw_rivers, Rivers

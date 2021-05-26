@@ -11,7 +11,7 @@ from mysql.connector import cursor
 import requests
 import sqlite3
 import textwrap
-import pyodbc
+
 
 from mqtt_fiumi_publisher import publisher
 
@@ -410,9 +410,9 @@ class MYSQLRivers:
     
     def __init__(self)-> None:
         self.connection = mysql.connector.connect(
-        host= '127.0.0.1',
+        host= 'ec2-3-131-169-162.us-east-2.compute.amazonaws.com', #'127.0.0.1'
         port=  3310,
-        database = 'rivers_db',
+        database = 'test_databse',  #'rivers_db'
         user = 'root',
         password = 'password'
         )

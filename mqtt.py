@@ -4,6 +4,7 @@
 import paho.mqtt.client as mqtt #import the client1
 import time
 from datetime import datetime
+#from apscheduler.schedulers.blocking import BlockingScheduler
 
 from dati_fiumi import Rivers, MYSQLRivers
 
@@ -32,7 +33,6 @@ def on_message(client, userdata, message):
     #print("message received " ,str(message.payload.decode("utf-8")))
     #print('message received')
     #print(message.payload.decode())
-    manager = MYSQLRivers()
     dic = eval(message.payload.decode())
     print(dic)
     river = Rivers.from_repr(dic)
@@ -40,8 +40,9 @@ def on_message(client, userdata, message):
     manager.save(river)
     
 ########################################
-
+    
 #broker_address="broker.hivemq.com"
+manager = MYSQLRivers()
 broker_address= "broker.emqx.io" #"iot.eclipse.org"," "broker.emqx.io", "mqtt.eclipse.or"
 client = mqtt.Client('fiumi-storer') #client = mqtt.Client() create new instance ; client = mqtt.Client()
 client.connect(broker_address) #connect to broker
@@ -53,4 +54,8 @@ client.loop_forever()
 
 #time.sleep(10) # wait
 
-
+'''
+scheduler = BlockingScheduler()
+scheduler.add_job(to_run_every_hour, 'interval', seconds=10)
+scheduler.start()
+'''

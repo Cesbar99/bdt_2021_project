@@ -1,4 +1,5 @@
 from __future__ import absolute_import, annotations
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 import textwrap
 import os
@@ -16,20 +17,16 @@ from mqtt_fiumi_publisher import publisher
 
 #os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech')
 
-#manager_mysql = MYSQLRivers()
-#manager_mysql.create()
-
-file = 'try_data.json' #substitute with real json with all historical data
-with open(file, 'r+', encoding = 'utf-8') as f: 
-    file_reader = json.load(f) 
-    for diz in file_reader:
-        manager = Manager_dati_storici(diz)
-        manager.manage_historic_river()
-        manager.publish_historic_river()  
-        f.seek(0)
+manager_mysql = MYSQLRivers()
+manager_mysql.create()
 
 url = 'http://dati.retecivica.bz.it/services/meteo/v1/sensors'
 manager = manager_dati_nuovi()
 manager.manage_new_rivers(url)
 manager.publish_new_rivers()
 
+'''
+scheduler = BlockingScheduler()
+scheduler.add_job(to_run_hourly, 'interval', seconds=10)
+scheduler.start()
+'''

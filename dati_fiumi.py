@@ -492,35 +492,63 @@ class MYSQLRivers:
             table_name = 'Tabella_Talvera'
         return table_name
 
+    def check_tables_exist(self):
+        cursor = self.connection.cursor()
+        queries = ["SHOW TABLES LIKE 'Tabella_Adige';", "SHOW TABLES LIKE 'Tabella_Isarco';", "SHOW TABLES LIKE 'Tabella_Talvera';", "SHOW TABLES LIKE 'Tabella_Brenta';"]
+        non_existing_tables = []
+        for i in range(len(queries)):
+            cursor.execute(queries[i])
+            output = cursor.fetchall()
+            if len(output) == 0:
+                if i == 0:
+                    print('Tabella Adige not existing')
+                    non_existing_tables.append('Tabella_Adige')
+                if i == 1:
+                    print('Tabella Isarco not existing')
+                    non_existing_tables.append('Tabella_Isarco')
+                if i == 2:
+                    print('Tabella Talvera not existing')
+                    non_existing_tables.append('Tabella_Talvera')
+
+        cursor.close()
+        return non_existing_tables
+
     def create(self) -> None:
         
         cursor = self.connection.cursor()
         # table_name_fiumi = 'Tabella_fiumi' 
-        nomi_tabelle = ['Tabella_Adige', 'Tabella_Isarco','Tabella_Talvera']
+        nomi_tabelle = MYSQLRivers.check_tables_exist(self) #['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
 
-        table_names = 'Tabella_nomi'
-        create_table_names_query = '''
-        CREATE TABLE {table_name} (
-            Id INT ,
-            Name NVARCHAR(128) NOT NULL)
-            '''.format(table_name = table_names)
+        if len(nomi_tabelle) > 0:
+            print('Creating table: Tabella_nomi')
+            table_names = 'Tabella_nomi'
+            create_table_names_query = '''
+            CREATE TABLE {table_name} (
+                Id INT ,
+                Name NVARCHAR(128) NOT NULL)
+                '''.format(table_name = table_names)
 
-        for table_name in nomi_tabelle:
-            cursor.execute(MYSQLRivers.query_table(table_name))
+            for table_name in nomi_tabelle:
+                print('Creating table: ', table_name)
+                cursor.execute(MYSQLRivers.query_table(table_name))
+                
+            cursor.execute(create_table_names_query)
+
+            names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
+            query = 'INSERT INTO Tabella_nomi(Id, Name) VALUES (%s, %s)'
+
+            for i in range(1, 4):
+                cursor.execute(query, (i, names[i-1]) )
             
-        cursor.execute(create_table_names_query)
+            print('All tables created, ready to get some data!')
 
-        names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
-        query = 'INSERT INTO Tabella_nomi(Id, Name) VALUES (%s, %s)'
+            cursor.close()
 
-        for i in range(1, 4):
-            cursor.execute(query, (i, names[i-1]) )
+        else:
+            print('All tables already present, ready to get new data!')
 
-        cursor.close()
+        
+    
         
 
-    
-    
 
-
-    

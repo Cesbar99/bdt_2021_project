@@ -1,4 +1,5 @@
 import pandas as pd 
+import numpy as np 
 from pandas import *
 from pandas.plotting import lag_plot, autocorrelation_plot
 import matplotlib.pyplot as plt 
@@ -10,9 +11,9 @@ from mysql.connector import connection
 
 
 connection = mysql.connector.connect(
-        host= '127.0.0.1',
+        host= 'ec2-3-131-169-162.us-east-2.compute.amazonaws.com', #'127.0.0.1'
         port=  3310,
-        database = 'rivers_db',
+        database = 'test_databse',  #'rivers_db'
         user = 'root',
         password = 'password'
         )
@@ -21,14 +22,21 @@ cursor = connection.cursor()
 
 # GET THE DATA
 query = 'SELECT Timestamp, W_mean from Tabella_Isarco'
-cursor.execute(query)
-series = cursor.fetchall() # series should represente the timestamp and the w_mean for all the observations
-series.plot() #  line plot of the dataset is then created
+
+df = pd.read_sql(query, con=connection)
+print(type(df))
+#print(df.head())
+##plt.plot(df)
+#lag_plot(df)
+#plt.show()
+df.plot(x = 'Timestamp', y = 'W_mean', kind = 'scatter')
+pd.plotting.lag_plot(df['W_mean'], lag = 1)
 plt.show()
+""" #  line plot of the dataset is then created
+
 
 # CHECK FOR AUTOCORRELATION  
-lag_plot(series)
-plt.show()
+
 #EXPECTED OUTPUT : We should see a large ball of observations along a diagonal line of the plot.
 #  It clearly shows a relationship or some correlation.
 values = DataFrame(series.values)
@@ -140,4 +148,4 @@ plt.plot(predictions, color='red')
 plt.show()
 
 
-cursor.close()
+cursor.close()"""

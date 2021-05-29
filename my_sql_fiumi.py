@@ -16,6 +16,7 @@ query = 'INSERT into {table_name}(id, Q_mean, W_mean, WT_mean,Timestamp, Stagion
 cursor.execute(query)
 
 
+
 cursor.close()
 connection.close()
 

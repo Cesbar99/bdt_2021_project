@@ -13,7 +13,7 @@ import sqlite3
 import textwrap
 
 
-from mqtt_fiumi_publisher import publisher
+from mqtt_fiumi_publisher import publisher_dic
 
 ''' DA AGGIUNGERE AI DATI STORICI
 id, stagione
@@ -321,7 +321,7 @@ class Manager_dati_storici:
         
     def publish_historic_river(self):
                         
-        publisher(self.diz)
+        publisher_dic(self.diz)
         #print(self.diz)
 
     def add_season(diz:dict):
@@ -396,10 +396,10 @@ class manager_dati_nuovi:
                     self.dic3[river['TYPE']+'_mean'] = river['VALUE']
 
     def publish_new_rivers(self):
-       
-        publisher(self.dic1)
-        publisher(self.dic2)
-        publisher(self.dic3)
+        
+        publisher_dic(self.dic1)
+        publisher_dic(self.dic2)
+        publisher_dic(self.dic3)
         '''
         print(self.dic1)
         print(self.dic2)
@@ -427,6 +427,7 @@ class MYSQLRivers:
         cursor.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
     
         cursor.close()
+        self.connection.close()
         
     
     def from_db_to_list(self, table_name) -> List[Rivers]:
@@ -447,6 +448,7 @@ class MYSQLRivers:
             )
         
         cursor.close()
+        self.connection.close()
 
         return rivers
 
@@ -546,6 +548,8 @@ class MYSQLRivers:
 
         else:
             print('All tables already present, ready to get new data!')
+        
+        self.connection.close()
 
         
     

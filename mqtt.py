@@ -1,6 +1,7 @@
 #TO RUN ON PROMPT EXECUTE THE FOLLOWING CODE WITHOUT IMPORTING TIME AND FUNCTION TIME.SLEEP
 
 #########
+from logging import Manager
 import paho.mqtt.client as mqtt #import the client1
 import time
 from datetime import datetime
@@ -29,29 +30,37 @@ client.subscribe('fiumi') #client.subscribe('testtopic/#')
 client.loop_forever()
 #time.sleep(10) # wait
 '''
+
 def on_message(client, userdata, message):
     #print("message received " ,str(message.payload.decode("utf-8")))
     #print('message received')
     #print(message.payload.decode())
-    dic = eval(message.payload.decode())
-    print(dic)
-    river = Rivers.from_repr(dic)
-    #print(Rivers.to_repr(river))
-    manager.save(river)
+
+    if message.payload.decode() == 'data terminated for now... see you later!':
+        manager.connection.close()
+        print('eccomi')
+    else:
+        dic = eval(message.payload.decode())
+        print(dic)
+        river = Rivers.from_repr(dic)
+        #print(Rivers.to_repr(river))
+        manager.save(river)
+        print('Un fiume salvato!')
+
     
 ########################################
     
-#broker_address="broker.hivemq.com"
+
+#broker_address= "broker.hivemq.com"
 manager = MYSQLRivers()
-broker_address= "broker.emqx.io" #"iot.eclipse.org"," "broker.emqx.io", "mqtt.eclipse.or"
+broker_address= "broker.emqx.io" #"iot.eclipse.org"," "broker.emqx.io", "mqtt.eclipse.org"
 client = mqtt.Client('fiumi-storer') #client = mqtt.Client() create new instance ; client = mqtt.Client()
 client.connect(broker_address) #connect to broker
 client.subscribe('fiumi') #client.subscribe('testtopic/#')
-client.on_message=on_message #attach function to callback
+client.on_message = on_message #attach function to callback
 client.loop_forever()
 #client.loop_start() #start the loop
 #client.loop_stop()
-
 #time.sleep(10) # wait
 
 '''

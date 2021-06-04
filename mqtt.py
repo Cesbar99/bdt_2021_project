@@ -40,7 +40,7 @@ def on_message(client, userdata, message):
     print(dic)
     river = Rivers.from_repr(dic)
     #print(Rivers.to_repr(river))
-    #manager.save(river)
+    manager.save(river)
     print('Un fiume salvato!')
 
     

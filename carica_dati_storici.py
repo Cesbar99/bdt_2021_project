@@ -22,6 +22,7 @@ with open(file, 'r+', encoding = 'utf-8') as f:
     for diz in file_reader:
         manager = Manager_dati_storici(diz)
         manager.manage_historic_river()
-        manager.publish_historic_river()  
+        manager.publish_historic_river()
+        time.sleep(.2) #.15  
         f.seek(0)
 

@@ -35,17 +35,13 @@ def on_message(client, userdata, message):
     #print("message received " ,str(message.payload.decode("utf-8")))
     #print('message received')
     #print(message.payload.decode())
-
-    if message.payload.decode() == 'data terminated for now... see you later!':
-        manager.connection.close()
-        print('eccomi')
-    else:
-        dic = eval(message.payload.decode())
-        print(dic)
-        river = Rivers.from_repr(dic)
-        #print(Rivers.to_repr(river))
-        manager.save(river)
-        print('Un fiume salvato!')
+    
+    dic = eval(message.payload.decode())
+    print(dic)
+    river = Rivers.from_repr(dic)
+    #print(Rivers.to_repr(river))
+    manager.save(river)
+    print('Un fiume salvato!')
 
     
 ########################################
@@ -55,13 +51,14 @@ def on_message(client, userdata, message):
 manager = MYSQLRivers()
 broker_address= "broker.emqx.io" #"iot.eclipse.org"," "broker.emqx.io", "mqtt.eclipse.org"
 client = mqtt.Client('fiumi-storer') #client = mqtt.Client() create new instance ; client = mqtt.Client()
-client.connect(broker_address) #connect to broker
+client.connect(broker_address, 1883, 60) #connect to broker
 client.subscribe('fiumi') #client.subscribe('testtopic/#')
 client.on_message = on_message #attach function to callback
 client.loop_forever()
 #client.loop_start() #start the loop
 #client.loop_stop()
-#time.sleep(10) # wait
+#time.sleep(3600) # wait
+
 
 '''
 scheduler = BlockingScheduler()

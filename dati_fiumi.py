@@ -322,6 +322,7 @@ class Manager_dati_storici:
     def publish_historic_river(self):
                         
         publisher_dic(self.diz)
+        print(self.diz)
         #print(self.diz)
 
     def add_season(diz:dict):
@@ -427,7 +428,7 @@ class MYSQLRivers:
         cursor.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
     
         cursor.close()
-        self.connection.close()
+        #self.connection.close()
         
     
     def from_db_to_list(self, table_name) -> List[Rivers]:

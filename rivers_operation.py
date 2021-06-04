@@ -17,28 +17,17 @@ from mqtt_fiumi_publisher import publisher_dic, publisher_str
 
 #os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech')
 
-#while True:
-manager_mysql = MYSQLRivers()
-manager_mysql.create()
+while True:
+    manager_mysql = MYSQLRivers()
+    manager_mysql.create()
 
-#publisher_str('I am about to send you some delicious data, get ready!')
+    url = 'http://dati.retecivica.bz.it/services/meteo/v1/sensors'
+    manager = manager_dati_nuovi()
+    manager.manage_new_rivers(url)
+    manager.publish_new_rivers()
 
-url = 'http://dati.retecivica.bz.it/services/meteo/v1/sensors'
-manager = manager_dati_nuovi()
-manager.manage_new_rivers(url)
-manager.publish_new_rivers()
+    manager_mysql.connection.close()
 
-publisher_str('data terminated for now... see you later!')
-
-#time.sleep(3600)
+    time.sleep(3600)
 
 
-'''
-scheduler = BlockingScheduler()
-scheduler.add_job(to_run_hourly, 'interval', seconds=10)
-scheduler.start()
-
-dic = {'casa':'stadio'}
-publisher(dic)
-print(dic)
-'''

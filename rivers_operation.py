@@ -26,8 +26,6 @@ while True:
     manager.manage_new_rivers(url)
     manager.publish_new_rivers()
 
-    manager_mysql.connection.close()
-
     time.sleep(3600)
 
 

@@ -24,4 +24,4 @@ with open(file, 'r+', encoding = 'utf-8') as f:
         manager.manage_historic_river()
         manager.publish_historic_river()  
         f.seek(0)
-manager_mysql.connection.close()
+

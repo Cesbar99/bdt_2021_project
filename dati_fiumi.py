@@ -418,10 +418,11 @@ class MYSQLRivers:
         password = 'password'
         )
         self.connection.autocommit = True
+        self.cursor = self.connection.cursor()
     
     def save(self, river:Rivers) -> None:
     
-        cursor = self.connection.cursor()
+        cursor = self.cursor()
 
         table_name = MYSQLRivers.from_name_to_table(river.name())
         query = MYSQLRivers.query_insert(table_name)    
@@ -432,7 +433,7 @@ class MYSQLRivers:
         
     
     def from_db_to_list(self, table_name) -> List[Rivers]:
-        cursor = self.connection.cursor()
+        cursor = self.cursor()
 
         query1 = 'SELECT * from {tabella}'.format(tabella = table_name)
 
@@ -496,7 +497,7 @@ class MYSQLRivers:
         return table_name
 
     def check_tables_exist(self):
-        cursor = self.connection.cursor()
+        cursor = self.cursor()
         queries = ["SHOW TABLES LIKE 'Tabella_Adige';", "SHOW TABLES LIKE 'Tabella_Isarco';", "SHOW TABLES LIKE 'Tabella_Talvera';", "SHOW TABLES LIKE 'Tabella_Brenta';"]
         non_existing_tables = []
         for i in range(len(queries)):
@@ -518,7 +519,7 @@ class MYSQLRivers:
 
     def create(self) -> None:
         
-        cursor = self.connection.cursor()
+        cursor = self.cursor()
         # table_name_fiumi = 'Tabella_fiumi' 
         nomi_tabelle = MYSQLRivers.check_tables_exist(self) #['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
 

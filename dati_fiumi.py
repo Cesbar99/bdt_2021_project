@@ -418,11 +418,10 @@ class MYSQLRivers:
         password = 'password'
         )
         self.connection.autocommit = True
-        self.cursor = self.connection.cursor()
     
     def save(self, river:Rivers) -> None:
     
-        cursor = self.cursor()
+        cursor = self.connection.cursor()
 
         table_name = MYSQLRivers.from_name_to_table(river.name())
         query = MYSQLRivers.query_insert(table_name)    
@@ -433,7 +432,7 @@ class MYSQLRivers:
         
     
     def from_db_to_list(self, table_name) -> List[Rivers]:
-        cursor = self.cursor()
+        cursor = self.connection.cursor()
 
         query1 = 'SELECT * from {tabella}'.format(tabella = table_name)
 
@@ -497,7 +496,7 @@ class MYSQLRivers:
         return table_name
 
     def check_tables_exist(self):
-        cursor = self.cursor()
+        cursor = self.connection.cursor()
         queries = ["SHOW TABLES LIKE 'Tabella_Adige';", "SHOW TABLES LIKE 'Tabella_Isarco';", "SHOW TABLES LIKE 'Tabella_Talvera';", "SHOW TABLES LIKE 'Tabella_Brenta';"]
         non_existing_tables = []
         for i in range(len(queries)):
@@ -519,7 +518,7 @@ class MYSQLRivers:
 
     def create(self) -> None:
         
-        cursor = self.cursor()
+        cursor = self.connection.cursor()
         # table_name_fiumi = 'Tabella_fiumi' 
         nomi_tabelle = MYSQLRivers.check_tables_exist(self) #['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
 
@@ -532,11 +531,13 @@ class MYSQLRivers:
                 Name NVARCHAR(128) NOT NULL)
                 '''.format(table_name = table_names)
 
+            cursor.execute(create_table_names_query)
+
             for table_name in nomi_tabelle:
                 print('Creating table: ', table_name)
                 cursor.execute(MYSQLRivers.query_table(table_name))
                 
-            cursor.execute(create_table_names_query)
+            
 
             names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
             query = 'INSERT INTO Tabella_nomi(Id, Name) VALUES (%s, %s)'

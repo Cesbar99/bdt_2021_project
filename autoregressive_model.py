@@ -4,6 +4,7 @@ from pandas import *
 from pandas.plotting import lag_plot, autocorrelation_plot
 import matplotlib.pyplot as plt 
 from statsmodels.tsa.ar_model import AutoReg
+from statsmodels.graphics.tsaplots import plot_acf
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 import mysql.connector
@@ -21,33 +22,31 @@ connection.autocommit = True
 cursor = connection.cursor()
 
 # GET THE DATA
-query = 'SELECT Timestamp, W_mean from Tabella_Isarco'
+query = 'SELECT Timestamp, W_mean from Tabella_Isarco' 
 
 df = pd.read_sql(query, con=connection)
-print(type(df))
 #print(df.head())
-##plt.plot(df)
-#lag_plot(df)
-#plt.show()
-df.plot(x = 'Timestamp', y = 'W_mean', kind = 'scatter')
-pd.plotting.lag_plot(df['W_mean'], lag = 1)
+
+df.plot(x = 'Timestamp', y = 'W_mean')
+
+plt.title('Water level - time series')
+plt.xlabel('date')
+plt.ylabel('Water level (cm)')
 plt.show()
-""" #  line plot of the dataset is then created
-
-
 # CHECK FOR AUTOCORRELATION  
 
-#EXPECTED OUTPUT : We should see a large ball of observations along a diagonal line of the plot.
-#  It clearly shows a relationship or some correlation.
-values = DataFrame(series.values)
+values = DataFrame(df['W_mean'].values)
 dataframe = concat([values.shift(1), values], axis=1)
 dataframe.columns = ['t-1', 't+1']
+#print(dataframe)
 result = dataframe.corr()
-print(result)
+#print(result)
+
 # AUTOCORRELATION PLOT
-autocorrelation_plot(series)
+autocorrelation_plot(df['W_mean'])
+plot_acf(df['W_mean'], lags=31)
+
 plt.show()
-# PERSISTENCE MODEL 
 '''The simplest model that we could use to make predictions would be to persist the last observation. 
 We can call this a persistence model and it provides a baseline of performance for the problem 
 that we can use for comparison with an autoregression model.
@@ -60,38 +59,16 @@ The predictions are made using a walk-forward validation model so
 that we can persist the most recent observations for the next day. 
 This means that we are not making a 7-day forecast, but 7 1-day forecasts.
 '''
-# create lagged dataset
-values = DataFrame(series.values)
-dataframe = concat([values.shift(1), values], axis=1)
-dataframe.columns = ['t-1', 't+1']
-# split into train and test sets
-X = dataframe.values
-train, test = X[1:len(X)-7], X[len(X)-7:] # We need to modify this because we do not have daily information
-train_X, train_y = train[:,0], train[:,1]
-test_X, test_y = test[:,0], test[:,1]
- 
-# persistence model
-def model_persistence(x):
-	return x
- 
-# walk-forward validation
-predictions = list()
-for x in test_X:
-	yhat = model_persistence(x)
-	predictions.append(yhat)
-test_score = mean_squared_error(test_y, predictions)
-print('Test MSE: %.3f' % test_score)
-# plot predictions vs expected
-plt.plot(test_y)
-plt.plot(predictions, color='red')
-plt.show()
 
+# split into train and test sets
+X = df['W_mean'].values
+#print((X))
+train, test = X[1:len(X)-9000], X[len(X)-9000:] # We need to modify this because we do not have daily information
+#train_X, train_y = train[:,0], train[:,1]
+#test_X, test_y = test[:,0], test[:,1]
 # AUTOREGRESSIVE MODEL 
-# split dataset
-X = series.values
-train, test = X[1:len(X)-7], X[len(X)-7:]
 # train autoregression
-model = AutoReg(train, lags=29)
+model = AutoReg(train, lags = 800)
 model_fit = model.fit()
 print('Coefficients: %s' % model_fit.params)
 # make predictions
@@ -117,7 +94,7 @@ from the model and used in the regression equation to come up with new forecasts
 The coefficients are provided in an array with the intercept term followed by the coefficients
  for each lag variable starting at t-1 to t-n. We simply need to use them in the right order on the history 
  of observations, as follows:
-'''
+
 # split dataset
 X = series.values
 train, test = X[1:len(X)-7], X[len(X)-7:]
@@ -148,4 +125,4 @@ plt.plot(predictions, color='red')
 plt.show()
 
 
-cursor.close()"""
+cursor.close()'''

@@ -11,6 +11,7 @@ from mysql.connector import cursor
 import requests
 import sqlite3
 import textwrap
+import math
 
 
 from mqtt_fiumi_publisher import publisher_dic
@@ -225,13 +226,21 @@ class Rivers:
 
     @staticmethod 
     def from_repr(diz: dict) -> Rivers:
+        if 'Q_mean' not in diz: 
+            diz['Q_mean'] = math.nan
 
+        if 'W_mean' not in diz: 
+            diz['W_mean'] = math.nan
+
+        if 'WT_mean' not in diz: 
+            diz['WT_mean'] = math.nan
+        
         return Rivers(
             datetime.strptime(diz['TimeStamp'], '%Y-%m-%d %H:%M:%S' ), #DATETIME OBJECT; if string needed use: diz['TimeStamp']
             diz['NAME'],
             diz['Stagione'],
             diz['ID'],
-            diz['Q_mean'], 
+            diz['Q_mean'],
             diz['W_mean'], 
             diz['WT_mean'] 
         )
@@ -320,11 +329,10 @@ class Manager_dati_storici:
             del self.diz['SSTF_mean']
         
     def publish_historic_river(self):
-                        
         publisher_dic(self.diz)
         print(self.diz)
-        #print(self.diz)
 
+        
     def add_season(diz:dict):
 
         tempo = diz['TimeStamp']
@@ -350,7 +358,6 @@ class Manager_dati_storici:
         else:
             diz['ID'] = 3  ## TALVERA
         return diz
-
 
 class manager_dati_nuovi:
 
@@ -401,11 +408,11 @@ class manager_dati_nuovi:
         publisher_dic(self.dic1)
         publisher_dic(self.dic2)
         publisher_dic(self.dic3)
-        '''
+
         print(self.dic1)
         print(self.dic2)
         print(self.dic3)
-        '''
+        
 
 class MYSQLRivers:
     

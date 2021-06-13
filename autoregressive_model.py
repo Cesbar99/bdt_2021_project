@@ -8,6 +8,7 @@ from statsmodels.graphics.tsaplots import plot_acf
 from sklearn.metrics import mean_squared_error
 from math import sqrt
 import mysql.connector
+import math
 from mysql.connector import connection
 
 
@@ -25,8 +26,26 @@ cursor = connection.cursor()
 query = 'SELECT Timestamp, W_mean from Tabella_Isarco' 
 
 df = pd.read_sql(query, con=connection)
-#print(df.head())
+print(df)
+droppare = []
+i = 0 
+while (i < (len(df['W_mean']))).bool()   :
+    		
+		if np.isnan(df['W_mean']):
+    			droppare.append(i)
+    			
+		i += 1
 
+for j in droppare : 
+	df.drop(j)
+	
+
+print(np.isnan(df['W_mean'][10] ))
+
+
+print(df)
+#print(df.head())
+"""
 df.plot(x = 'Timestamp', y = 'W_mean')
 
 plt.title('Water level - time series')
@@ -68,7 +87,7 @@ train, test = X[1:len(X)-9000], X[len(X)-9000:] # We need to modify this because
 #test_X, test_y = test[:,0], test[:,1]
 # AUTOREGRESSIVE MODEL 
 # train autoregression
-model = AutoReg(train, lags = 800)
+model = AutoReg(train, lags = 1)
 model_fit = model.fit()
 print('Coefficients: %s' % model_fit.params)
 # make predictions
@@ -125,4 +144,4 @@ plt.plot(predictions, color='red')
 plt.show()
 
 
-cursor.close()'''
+cursor.close()'''"""

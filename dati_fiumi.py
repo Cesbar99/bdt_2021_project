@@ -227,13 +227,13 @@ class Rivers:
     @staticmethod 
     def from_repr(diz: dict) -> Rivers:
         if 'Q_mean' not in diz: 
-            diz['Q_mean'] = math.nan
+            diz['Q_mean'] = None #math.nan
 
         if 'W_mean' not in diz: 
-            diz['W_mean'] = math.nan
+            diz['W_mean'] = None #math.nan
 
         if 'WT_mean' not in diz: 
-            diz['WT_mean'] = math.nan
+            diz['WT_mean'] = None #math.nan
         
         return Rivers(
             datetime.strptime(diz['TimeStamp'], '%Y-%m-%d %H:%M:%S' ), #DATETIME OBJECT; if string needed use: diz['TimeStamp']
@@ -426,14 +426,43 @@ class MYSQLRivers:
         )
         self.connection.autocommit = True
     
-    def save(self, river:Rivers) -> None:
-    
+    #def save(self, river:Rivers) -> None:
+    def save(self, lista_ricevuti:list, debug = None) -> None:
+        '''
         cursor = self.connection.cursor()
 
         table_name = MYSQLRivers.from_name_to_table(river.name())
         query = MYSQLRivers.query_insert(table_name)    
         cursor.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
     
+        cursor.close()
+        #self.connection.close() 
+        '''
+
+        cursor = self.connection.cursor()
+
+        if debug:
+            i = 0
+            while i < len(lista_ricevuti):
+                river = lista_ricevuti[i]
+                table_name = MYSQLRivers.from_name_to_table(river.name(), debug = True)
+                query = MYSQLRivers.query_insert(table_name)    
+                cursor.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
+                print('Un fiume salvato!')
+                i += 1
+            lista_ricevuti.clear()
+
+        else:
+            i = 0
+            while i < len(lista_ricevuti):
+                river = lista_ricevuti[i]
+                table_name = MYSQLRivers.from_name_to_table(river.name())
+                query = MYSQLRivers.query_insert(table_name)    
+                cursor.execute(query, (river.get_id(), river.q_mean(), river.w_mean(), river.wt_mean(), river.timestamp(), river.stagione() ))
+                print('Un fiume salvato!')
+                i += 1
+            lista_ricevuti.clear()
+
         cursor.close()
         #self.connection.close()
         
@@ -464,10 +493,10 @@ class MYSQLRivers:
         create_table_query = '''
         CREATE TABLE {table_name}
         (
-            Id INT ,
-            Q_mean NUMERIC NOT NULL,
-            W_mean NUMERIC NOT NULL,
-            WT_mean  NUMERIC NOT NULL,
+            Id INT,
+            Q_mean NUMERIC,
+            W_mean NUMERIC,
+            WT_mean  NUMERIC,
             Timestamp DATETIME NOT NULL,
             Stagione NVARCHAR(128) NOT NULL
         )
@@ -477,7 +506,7 @@ class MYSQLRivers:
 
     def query_insert(nome_tabella:str) -> str:
         insert_query = '''
-        INSERT into {table_name}(Id, Q_mean, W_mean, WT_mean,Timestamp, Stagione) VALUES (%s,%s,%s,%s,%s,%s)
+        INSERT into {table_name}(Id, Q_mean, W_mean, WT_mean, Timestamp, Stagione) VALUES (%s,%s,%s,%s,%s,%s)
         '''.format(table_name = nome_tabella)
 
         return insert_query
@@ -492,15 +521,32 @@ class MYSQLRivers:
             name = "TALFER BEI BOZEN/TALVERA A BOLZANO"
         return name
 
-    def from_name_to_table(name:str) -> str:
-
+    def from_name_to_table(name:str, debug = None) -> str:
+        '''
         if name == "EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD":
             table_name = 'Tabella_Isarco'
         elif name == 'ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE':
             table_name = 'Tabella_Adige'
         else:
             table_name = 'Tabella_Talvera'
-        return table_name
+        return table_name'''
+
+        if debug:
+            if name == "EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD":
+                table_name = 'Try_Isarco'
+            elif name == 'ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE':
+                table_name = 'Try_Adige'
+            else:
+                table_name = 'Try_Talvera'
+            return table_name
+        else:
+            if name == "EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD":
+                table_name = 'Tabella_Isarco'
+            elif name == 'ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE':
+                table_name = 'Tabella_Adige'
+            else:
+                table_name = 'Tabella_Talvera'
+            return table_name
 
     def check_tables_exist(self):
         cursor = self.connection.cursor()
@@ -543,8 +589,22 @@ class MYSQLRivers:
             for table_name in nomi_tabelle:
                 print('Creating table: ', table_name)
                 cursor.execute(MYSQLRivers.query_table(table_name))
-                
-            
+
+            debug_names = ['Try' + nome[7:] for nome in nomi_tabelle] #['Try_Isarco', 'Try_Adige', 'Try_Talvera']
+
+            for name in debug_names:    
+                create_table_query = '''
+                CREATE TABLE {table_name}
+                (
+                    Id INT,
+                    Q_mean NUMERIC,
+                    W_mean NUMERIC,
+                    WT_mean  NUMERIC,
+                    Timestamp DATETIME NOT NULL,
+                    Stagione NVARCHAR(128) NOT NULL
+                )
+                '''.format(table_name = name)
+                cursor.execute(create_table_query)
 
             names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
             query = 'INSERT INTO Tabella_nomi(Id, Name) VALUES (%s, %s)'

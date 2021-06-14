@@ -30,7 +30,7 @@ client.subscribe('fiumi') #client.subscribe('testtopic/#')
 client.loop_forever()
 #time.sleep(10) # wait
 '''
-
+'''
 def on_message(client, userdata, message):
     #print("message received " ,str(message.payload.decode("utf-8")))
     #print('message received')
@@ -42,12 +42,28 @@ def on_message(client, userdata, message):
     #print(Rivers.to_repr(river))
     manager.save(river)
     print('Un fiume salvato!')
-
+'''
+def on_message(client, userdata, message):
+    #print("message received " ,str(message.payload.decode("utf-8")))
+    #print('message received')
+    #print(message.payload.decode())
+    if message.payload.decode() == 'dati terminati! Ricrodati di salvarli':
+        manager.save(lista_ricevuti, debug = True)
+        #print(message.payload.decode())
+    else:
+        dic = eval(message.payload.decode())
+        print(dic)
+        river = Rivers.from_repr(dic)
+        print(Rivers.to_repr(river))
+        lista_ricevuti.append(river)
+        print('Un fiume ricevuto!')
+    
     
 ########################################
     
 
 #broker_address= "broker.hivemq.com"
+lista_ricevuti = []
 manager = MYSQLRivers()
 broker_address= "broker.emqx.io" #"iot.eclipse.org"," "broker.emqx.io", "mqtt.eclipse.org"
 client = mqtt.Client('fiumi-storer') #client = mqtt.Client() create new instance ; client = mqtt.Client()

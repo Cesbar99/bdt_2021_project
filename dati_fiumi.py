@@ -227,13 +227,13 @@ class Rivers:
     @staticmethod 
     def from_repr(diz: dict) -> Rivers:
         if 'Q_mean' not in diz: 
-            diz['Q_mean'] = None #math.nan
+            diz['Q_mean'] = '\\N' #None #math.nan
 
         if 'W_mean' not in diz: 
-            diz['W_mean'] = None #math.nan
+            diz['W_mean'] = '\\N' #None #math.nan
 
         if 'WT_mean' not in diz: 
-            diz['WT_mean'] = None #math.nan
+            diz['WT_mean'] = '\\N' #None #math.nan
         
         return Rivers(
             datetime.strptime(diz['TimeStamp'], '%Y-%m-%d %H:%M:%S' ), #DATETIME OBJECT; if string needed use: diz['TimeStamp']
@@ -331,7 +331,6 @@ class Manager_dati_storici:
     def publish_historic_river(self):
         publisher_dic(self.diz)
         print(self.diz)
-
         
     def add_season(diz:dict):
 
@@ -351,7 +350,7 @@ class Manager_dati_storici:
 
     def add_id(diz:dict):
 
-        if diz['NAME'] == "EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD": ###ISARCO
+        if diz['NAME'] == "EISACK BEI BOZEN S\u00c3\u0153D/ISARCO A BOLZANO SUD": ###ISARCO
             diz['ID'] = 1
         elif diz['NAME'] == "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE": ###ADIGE
             diz['ID'] = 2
@@ -422,12 +421,14 @@ class MYSQLRivers:
         port=  3310,
         database = 'test_databse',  #'rivers_db'
         user = 'root',
-        password = 'password'
+        password = 'password',
+        allow_local_infile = True
         )
         self.connection.autocommit = True
     
     #def save(self, river:Rivers) -> None:
-    def save(self, lista_ricevuti:list, debug = None) -> None:
+    #def save(self, lista_ricevuti:list, debug = None) -> None:
+    def save(self, debug = None) -> None:
         '''
         cursor = self.connection.cursor()
 
@@ -438,7 +439,8 @@ class MYSQLRivers:
         cursor.close()
         #self.connection.close() 
         '''
-
+        #######
+        '''
         cursor = self.connection.cursor()
 
         if debug:
@@ -465,7 +467,31 @@ class MYSQLRivers:
 
         cursor.close()
         #self.connection.close()
-        
+        '''
+        ######
+        if debug: 
+            tabelle = ['Try_Isarco', 'Try_Adige', 'Try_Talvera']
+        else:
+            tabelle = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
+        files = ['created_csv_isarco.csv', 'created_csv_adige.csv', 'created_csv_talvera.csv']
+
+        cursor = self.connection.cursor()
+        query = 'SET GLOBAL local_infile=1;'
+        cursor.execute(query)
+
+        for i in range(len(tabelle)):
+            query = """LOAD DATA LOCAL INFILE 'C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/{file_name}' 
+                    INTO TABLE {table_name}
+                    FIELDS TERMINATED BY ','
+                    ENCLOSED BY '"'
+                    LINES TERMINATED BY '\n'
+                    IGNORE 1 LINES; 
+                """.format(file_name = files[i], table_name = tabelle[i])
+            cursor.execute(query)
+            print('Salvato!')
+
+        cursor.close()
+        print('Terminato con successo!')
     
     def from_db_to_list(self, table_name) -> List[Rivers]:
         cursor = self.connection.cursor()
@@ -493,12 +519,12 @@ class MYSQLRivers:
         create_table_query = '''
         CREATE TABLE {table_name}
         (
-            Id INT,
-            Q_mean NUMERIC,
-            W_mean NUMERIC,
-            WT_mean  NUMERIC,
-            Timestamp DATETIME NOT NULL,
-            Stagione NVARCHAR(128) NOT NULL
+        Timestamp DATETIME NOT NULL,
+        Q_mean FLOAT (20,2) ,
+        W_mean FLOAT (20,2) ,
+        WT_mean  FLOAT (20,2) ,
+        Stagione NVARCHAR(128) NOT NULL,
+        Id INT
         )
         '''.format(table_name = nome_tabella)
         
@@ -579,10 +605,12 @@ class MYSQLRivers:
             print('Creating table: Tabella_nomi')
             table_names = 'Tabella_nomi'
             create_table_names_query = '''
-            CREATE TABLE {table_name} (
-                Id INT ,
-                Name NVARCHAR(128) NOT NULL)
-                '''.format(table_name = table_names)
+            CREATE TABLE {table_name} 
+            (
+            Id INT ,
+            Name NVARCHAR(128) NOT NULL
+            )
+            '''.format(table_name = table_names)
 
             cursor.execute(create_table_names_query)
 
@@ -596,12 +624,12 @@ class MYSQLRivers:
                 create_table_query = '''
                 CREATE TABLE {table_name}
                 (
-                    Id INT,
-                    Q_mean NUMERIC,
-                    W_mean NUMERIC,
-                    WT_mean  NUMERIC,
-                    Timestamp DATETIME NOT NULL,
-                    Stagione NVARCHAR(128) NOT NULL
+                Timestamp DATETIME NOT NULL,
+                Q_mean FLOAT (20,2) ,
+                W_mean FLOAT (20,2) ,
+                WT_mean  FLOAT (20,2) ,
+                Stagione NVARCHAR(128) NOT NULL,
+                Id INT
                 )
                 '''.format(table_name = name)
                 cursor.execute(create_table_query)

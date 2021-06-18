@@ -47,9 +47,11 @@ def on_message(client, userdata, message):
     #print("message received " ,str(message.payload.decode("utf-8")))
     #print('message received')
     #print(message.payload.decode())
-    if message.payload.decode() == 'dati terminati! Ricrodati di salvarli':
+    if message.payload.decode() == 'Dati terminati! Ricrodati di salvarli':
         manager.save(lista_ricevuti, debug = True)
         #print(message.payload.decode())
+    elif message.payload.decode() == '3 file creati! è ora di salvarli':
+        manager.save(debug = True)
     else:
         dic = eval(message.payload.decode())
         print(dic)

@@ -17,9 +17,9 @@ from mysql.connector import connection
 
 
 connection = mysql.connector.connect(
-        host= 'ec2-3-131-169-162.us-east-2.compute.amazonaws.com', #'127.0.0.1'
+        host= 'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
         port=  3310,
-        database = 'test_databse',  #'rivers_db'
+        database = 'database_fiumi',  #'rivers_db'
         user = 'root',
         password = 'password'
         )
@@ -28,7 +28,7 @@ cursor = connection.cursor()
 
 # GET THE DATA
 
-query = 'SELECT Timestamp, W_mean from Tabella_Isarco' 
+query = 'SELECT Timestamp, W_mean from Try_Isarco' 
 df = pd.read_sql(query, con=connection)
 
 
@@ -117,7 +117,7 @@ print(f'ADF Statistic: {ad_fuller_result[0]}')
 print(f'p-value: {ad_fuller_result[1]}') # it is stationary
 plot_pacf(train)
 plot_acf(train) 
-#plt.show()
+plt.show()
 
 # Try a AR(4) model
 var = 2 # Lowest rmse 

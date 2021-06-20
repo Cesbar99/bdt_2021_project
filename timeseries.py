@@ -1,86 +1,108 @@
-import mysql.connector
-from mysql.connector import connection
-import pandas as pd 
-import matplotlib.pyplot as plt
-from dateutil.parser import parse 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 import pandas as pd
-plt.rcParams.update({'figure.figsize': (10, 7), 'figure.dpi': 120})
+import mysql
+from matplotlib import pyplot as plt
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.seasonal import seasonal_decompose
+from statsmodels.tsa.arima_model import ARIMA
+from pandas.plotting import register_matplotlib_converters
+from mysql.connector import connection
+register_matplotlib_converters()
+
+
 
 connection = mysql.connector.connect(
-        host= 'ec2-3-131-169-162.us-east-2.compute.amazonaws.com', #'127.0.0.1'
+        host= 'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
         port=  3310,
-        database = 'test_databse',  #'rivers_db'
+        database = 'database_fiumi',  #'rivers_db'
         user = 'root',
         password = 'password'
         )
 connection.autocommit = True
 cursor = connection.cursor()
 
-## https://www.machinelearningplus.com/time-series/time-series-analysis-python/
-## https://machinelearningmastery.com/time-series-forecasting-methods-in-python-cheat-sheet/
 
-# GET THE DATA
-tabelle_fiumi = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
-variabili = [ 'W_mean', 'Wt_mean', 'Q_mean'] 
-"""for tabella_fiume in tabelle_fiumi:
-    for variabile in variabili:
-        query = 'SELECT Timestamp, {dato} from {nome}'.format(dato = variabile, nome = tabella_fiume) 
-        df = pd.read_sql(query, con=connection)"""
-
-query = 'SELECT Timestamp, W_mean from Tabella_Isarco' 
+query = 'SELECT Timestamp, W_mean from Try_Isarco' 
 df = pd.read_sql(query, con=connection)
-print(df)
+tempo = df['Timestamp']
+df = df['W_mean']
+#df = df[-12:]
+#print(df)
+plt.xlabel('Date')
+plt.ylabel('Water level')
 
-"""# VISUALIZE THE TIME SERIES 
+plt.plot(df)
+plt.show()
 
-def plot_df(df, x, y, title = "", xlabel='Date', ylabel='Value', dpi=100):
-    plt.figure(figsize=(16,5), dpi=dpi)
-    plt.plot(x, y, color='tab:red')
-    plt.gca().set(title=title, xlabel=xlabel, ylabel=ylabel)
-    plt.show()
+rolling_mean = df.rolling(window = 12).mean()
+rolling_std = df.rolling(window = 12).std()
+plt.plot(df, color = 'blue', label = 'Original')
+plt.plot(rolling_mean, color = 'red', label = 'Rolling Mean')
+plt.plot(rolling_std, color = 'black', label = 'Rolling Std')
+plt.legend(loc = 'best')
+plt.title('Rolling Mean & Rolling Standard Deviation')
+plt.show()
 
-# plot_df(df, x=df.index, y=df.value, title = 'Livello idrometico Isarco')
 
-# SEASONAL PLOT OF A TIMESERIES 
-'farlo meglio'
-dati_2019 = {'date': [], 'value': []}
-dati_2020 = {'date': [], 'value': []}
-dati_2021 = {'date': [], 'value': []}
-for el in df : 
-    if '2019' in el[0]:
-        dati_2019['date'].append(el[0])
-        dati_2019['value'].append(el[1])
-    elif '2020' in el[0]:
-        dati_2020['date'].append(el[0])
-        dati_2020['value'].append(el[1])
-    else:
-        dati_2021['date'].append(el[0])
-        dati_2021['value'].append(el[0])
+df_log = np.log(df)
+plt.plot(df_log)
 
-plt.plot(dati_2019['date'], dati_2019['value'])
-plt.plot(dati_2020['date'], dati_2020['value'])
-plt.plot(dati_2021['date'], dati_2021['value'])
-plt.xlabel('date')
-plt.ylabel('values')
-plt.title('Livello idrometrico isarco nel corso degli anni')
 
-# BOXPLOTS OF MOTH-WISE (SEASONAL) AND YEAR-WISE (TREND) DISTRIBUTION
+def get_stationarity(timeseries):
+    
+    # rolling statistics
+    rolling_mean = timeseries.rolling(window=12).mean()
+    rolling_std = timeseries.rolling(window=12).std()
+    
+    # rolling statistics plot
+    original = plt.plot(timeseries, color='blue', label='Original')
+    mean = plt.plot(rolling_mean, color='red', label='Rolling Mean')
+    std = plt.plot(rolling_std, color='black', label='Rolling Std')
+    plt.legend(loc='best')
+    plt.title('Rolling Mean & Standard Deviation')
+    plt.show(block=False)
+    
+    # Dickey–Fuller test:
+    result = adfuller(timeseries)
+    print('ADF Statistic: {}'.format(result[0]))
+    print('p-value: {}'.format(result[1]))
+    print('Critical Values:')
+    for key, value in result[4].items():
+        print('\t{}: {}'.format(key, value))
 
-# Prepare data
-df['year'] = [d.year for d in df.date]
-df['month'] = [d.strftime('%b') for d in df.date]
-years = df['year'].unique()
 
-# Draw Plot
-fig, axes = plt.subplots(1, 2, figsize=(20,7), dpi= 80)
-sns.boxplot(x='year', y='value', data=df, ax=axes[0])
-sns.boxplot(x='month', y='value', data=df.loc[~df.year.isin([1991, 2008]), :])
+rolling_mean = df_log.rolling(window=12).mean()
+df_log_minus_mean = df_log - rolling_mean
+df_log_minus_mean.dropna(inplace=True)
+get_stationarity(df_log_minus_mean)
 
-# Set Title
-axes[0].set_title('Year-wise Box Plot\n(The Trend)', fontsize=18); 
-axes[1].set_title('Month-wise Box Plot\n(The Seasonality)', fontsize=18)
-plt.show()"""
+
+rolling_mean_exp_decay = df_log.ewm(halflife=12, min_periods=0, adjust=True).mean()
+df_log_exp_decay = df_log - rolling_mean_exp_decay
+df_log_exp_decay.dropna(inplace=True)
+get_stationarity(df_log_exp_decay)
+
+
+df_log_shift = df_log - df_log.shift()
+df_log_shift.dropna(inplace=True)
+get_stationarity(df_log_shift)
+
+print(df_log)
+
+decomposition = seasonal_decompose(df_log) 
+model = ARIMA(df_log, order=(2,1,2))
+results = model.fit(disp=-1)
+plt.plot(df_log_shift)
+plt.plot(results.fittedvalues, color='red')
+plt.show()
+
+predictions_ARIMA_diff = pd.Series(results.fittedvalues, copy=True)
+predictions_ARIMA_diff_cumsum = predictions_ARIMA_diff.cumsum()
+predictions_ARIMA_log = pd.Series(df_log['Passengers'].iloc[0], index=df_log.index)
+predictions_ARIMA_log = predictions_ARIMA_log.add(predictions_ARIMA_diff_cumsum, fill_value=0)
+predictions_ARIMA = np.exp(predictions_ARIMA_log)
+plt.plot(df)
+plt.plot(predictions_ARIMA)
+plt.show()
+results.plot_predict(1,264)
+plt.show()

@@ -12,6 +12,7 @@ import requests
 import sqlite3
 import textwrap
 import math
+import pandas as pd
 
 
 from mqtt_fiumi_publisher import publisher_dic
@@ -364,6 +365,9 @@ class manager_dati_nuovi:
         self.dic1 = {'NAME':'ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE'}
         self.dic2 = {'NAME':'TALFER BEI BOZEN/TALVERA A BOLZANO'}
         self.dic3 = {'NAME':'EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD'}
+        self.insert1 = []
+        self.insert2 = []
+        self.insert3 = []
         self.discriminants_scode = ["29850PG", "83450PG", "82910PG"]
         self.discriminants_type = ["Q", "W", "WT"]
 
@@ -402,6 +406,32 @@ class manager_dati_nuovi:
                         self.dic3['ID'] = river['ID']
                     self.dic3[river['TYPE']+'_mean'] = river['VALUE']
 
+    def transfer_json(self):
+        self.insert1.append(self.dic1)
+        self.insert2.append(self.dic2)
+        self.insert3.append(self.dic3)
+        with open("created_json_isarco.json", "w") as target1:
+            json.dump(self.insert3, target1, default=str, ensure_ascii=False)
+        with open("created_json_adige.json", "w") as target2:
+            json.dump(self.insert1, target2, default=str, ensure_ascii=False)
+        with open("created_json_talvera.json", "w") as target3:
+            json.dump(self.insert2, target3, default=str, ensure_ascii=False)
+
+    def from_json_to_csv(self):
+        df = pd.read_json('created_json_talvera.json')
+        print(df)
+        del df['NAME']
+        df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
+        export_csv = df.to_csv('created_csv_talvera.csv', index = None, header=True)
+        df = pd.read_json('created_json_isarco.json')
+        del df['NAME']
+        df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
+        export_csv = df.to_csv('created_csv_isarco.csv', index = None, header=True)
+        df = pd.read_json('created_json_adige.json')
+        del df['NAME']
+        df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
+        export_csv = df.to_csv('created_csv_adige.csv', index = None, header=True)
+
     def publish_new_rivers(self):
         
         publisher_dic(self.dic1)
@@ -419,9 +449,9 @@ class MYSQLRivers:
         self.connection = mysql.connector.connect(
         host= 'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
         port=  3310,
-        database = 'test_databse',  #'rivers_db'
-        user = 'root',
-        password = 'password',
+        database = 'database_fiumi',  #'rivers_db'
+        user = 'root', #user_new
+        password = 'password', #passwordnew_user
         allow_local_infile = True
         )
         self.connection.autocommit = True
@@ -474,6 +504,7 @@ class MYSQLRivers:
         else:
             tabelle = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
         files = ['created_csv_isarco.csv', 'created_csv_adige.csv', 'created_csv_talvera.csv']
+        path = 'C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
 
         cursor = self.connection.cursor()
         query = 'SET GLOBAL local_infile=1;'
@@ -488,9 +519,19 @@ class MYSQLRivers:
                     IGNORE 1 LINES; 
                 """.format(file_name = files[i], table_name = tabelle[i])
             cursor.execute(query)
-            print('Salvato!')
+            print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 
+            os.remove( path+'{file_name}'.format(file_name = files[i]) )
+            if debug:
+                nome_file = 'created_json_{name}.json'.format(name = tabelle[i][4:].lower())
+            else:
+                nome_file = 'created_json_{name}.json'.format(name = tabelle[i][8:].lower())
+            os.remove( path + nome_file )
+            print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
+            #print( 'Rimosso il file: {file_name}'.format(file_name = nome_file ) )
+        
         cursor.close()
+
         print('Terminato con successo!')
     
     def from_db_to_list(self, table_name) -> List[Rivers]:
@@ -647,7 +688,7 @@ class MYSQLRivers:
         else:
             print('All tables already present, ready to get new data!')
         
-        #self.connection.close()
+        self.connection.close()
 
         
     

@@ -417,7 +417,7 @@ class MYSQLRivers:
     
     def __init__(self)-> None:
         self.connection = mysql.connector.connect(
-        host= 'ec2-3-131-169-162.us-east-2.compute.amazonaws.com', #'127.0.0.1'
+        host= 'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
         port=  3310,
         database = 'test_databse',  #'rivers_db'
         user = 'root',

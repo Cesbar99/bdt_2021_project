@@ -647,7 +647,7 @@ class MYSQLRivers:
         else:
             print('All tables already present, ready to get new data!')
         
-        self.connection.close()
+        #self.connection.close()
 
         
     

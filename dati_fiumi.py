@@ -423,10 +423,12 @@ class manager_dati_nuovi:
         df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
         export_csv = df.to_csv('created_csv_talvera.csv', index = None, header=True)
         df = pd.read_json('created_json_isarco.json')
+        print(df)
         del df['NAME']
         df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
         export_csv = df.to_csv('created_csv_isarco.csv', index = None, header=True)
         df = pd.read_json('created_json_adige.json')
+        print(df)
         del df['NAME']
         df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
         export_csv = df.to_csv('created_csv_adige.csv', index = None, header=True)
@@ -455,7 +457,7 @@ class MYSQLRivers:
         )
         self.connection.autocommit = True
 
-        query = 'SET GLOBAL interactive_timeout=5400;' #600
+        query = 'SET GLOBAL interactive_timeout=5400;' #6000
         cursor = self.connection.cursor()
         cursor.execute(query)
         cursor.close()

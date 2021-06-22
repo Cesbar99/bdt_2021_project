@@ -68,7 +68,7 @@ publisher_str('Dati terminati! Ricrodati di salvarli')
 manager = MYSQLRivers()
 manager.create()
 
-with open('historic_data.json', 'r') as f:
+with open('historic_data.json', 'r') as f: #latest.json
     file_reader = json.load(f) 
     to_insert = []
     to_insert_talvera = []

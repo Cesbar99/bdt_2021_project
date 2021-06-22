@@ -59,7 +59,6 @@ class Name:
         elif scode == "82910PG":
             return 'TALFER BEI BOZEN/TALVERA A BOLZANO'
     
-
 class ID:
     def __init__(self, scode:str):
         self.id = ID.from_scode_to_id(scode)
@@ -455,6 +454,11 @@ class MYSQLRivers:
         allow_local_infile = True
         )
         self.connection.autocommit = True
+
+        query = 'SET GLOBAL interactive_timeout=6000;'
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        cursor.close()
     
     #def save(self, river:Rivers) -> None:
     #def save(self, lista_ricevuti:list, debug = None) -> None:
@@ -528,11 +532,12 @@ class MYSQLRivers:
                 nome_file = 'created_json_{name}.json'.format(name = tabelle[i][8:].lower())
             os.remove( path + nome_file )
             print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
-            #print( 'Rimosso il file: {file_name}'.format(file_name = nome_file ) )
+            print( 'Rimosso il file: {file_name}'.format(file_name = nome_file ) )
         
         cursor.close()
 
         print('Terminato con successo!')
+        print('')
     
     def from_db_to_list(self, table_name) -> List[Rivers]:
         cursor = self.connection.cursor()

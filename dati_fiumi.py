@@ -455,7 +455,7 @@ class MYSQLRivers:
         )
         self.connection.autocommit = True
 
-        query = 'SET GLOBAL interactive_timeout=6000;'
+        query = 'SET GLOBAL interactive_timeout=5400;' #600
         cursor = self.connection.cursor()
         cursor.execute(query)
         cursor.close()

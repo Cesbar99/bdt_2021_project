@@ -94,8 +94,10 @@ with open('historic_data.json', 'r') as f: #latest.json
 
 with open("created_json_talvera.json", "w") as target1:
     json.dump(to_insert_talvera, target1, default=str, ensure_ascii=False)
+
 with open("created_json_isarco.json", "w") as target2:
     json.dump(to_insert_isarco, target2, default=str, ensure_ascii=False)
+
 with open("created_json_adige.json", "w") as target3:
     json.dump(to_insert_adige, target3, default=str, ensure_ascii=False)
 
@@ -103,9 +105,11 @@ with open("created_json_adige.json", "w") as target3:
 df = pd.read_json('created_json_talvera.json')
 del df['NAME']
 export_csv = df.to_csv('created_csv_talvera.csv', index = None, header=True)
+
 df = pd.read_json('created_json_isarco.json')
 del df['NAME']
 export_csv = df.to_csv('created_csv_isarco.csv', index = None, header=True)
+
 df = pd.read_json('created_json_adige.json')
 del df['NAME']
 export_csv = df.to_csv('created_csv_adige.csv', index = None, header=True)

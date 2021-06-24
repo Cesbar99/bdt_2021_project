@@ -1,11 +1,10 @@
 #TO RUN ON PROMPT EXECUTE THE FOLLOWING CODE WITHOUT IMPORTING TIME AND FUNCTION TIME.SLEEP
 
 #########
-from logging import Manager
+import os
 import paho.mqtt.client as mqtt #import the client1
 import time
 from datetime import datetime
-#from apscheduler.schedulers.blocking import BlockingScheduler
 
 from dati_fiumi import Rivers, MYSQLRivers
 
@@ -70,7 +69,7 @@ manager = MYSQLRivers()
 broker_address= "broker.emqx.io" #"iot.eclipse.org"," "broker.emqx.io", "mqtt.eclipse.org"
 client = mqtt.Client('fiumi-storer') #client = mqtt.Client() create new instance ; client = mqtt.Client()
 client.connect(broker_address, 1883, 60) #connect to broker
-client.subscribe('fiumi') #client.subscribe('testtopic/#')
+client.subscribe(os.environ.get('topic')) #client.subscribe('testtopic/#')
 client.on_message = on_message #attach function to callback
 client.loop_forever()
 #client.loop_start() #start the loop

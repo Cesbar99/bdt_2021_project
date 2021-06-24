@@ -42,7 +42,7 @@ new_rivers = [d1, d2, d3]
 print(new_rivers)
 '''
 
-# os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data science/big data tech')
+# os.chdir('C:\Users\Cesare\OneDrive\studio\magistrale-data-science\big-data-tech\bdt_2021_project')
 
 class Name:
     def __init__(self, scode:str):
@@ -448,11 +448,11 @@ class MYSQLRivers:
     
     def __init__(self)-> None:
         self.connection = mysql.connector.connect(
-        host= 'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
-        port=  3310,
+        host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
+        port =  3310,
         database = 'database_fiumi',  #'rivers_db'
-        user = 'root', #user_new
-        password = 'password', #passwordnew_user
+        user = os.environ.get('user'), #root, user_new
+        password = os.environ.get('password'), #password, passwordnew_user
         allow_local_infile = True
         )
         self.connection.autocommit = True

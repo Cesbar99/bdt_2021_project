@@ -510,20 +510,20 @@ class MYSQLRivers:
         else:
             tabelle = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
         files = ['created_csv_isarco.csv', 'created_csv_adige.csv', 'created_csv_talvera.csv']
-        path = 'C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+        path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
 
         cursor = self.connection.cursor()
         query = 'SET GLOBAL local_infile=1;'
         cursor.execute(query)
 
         for i in range(len(tabelle)):
-            query = """LOAD DATA LOCAL INFILE 'C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/{file_name}' 
+            query = """LOAD DATA LOCAL INFILE {path_and_file_name}
                     INTO TABLE {table_name}
                     FIELDS TERMINATED BY ','
                     ENCLOSED BY '"'
                     LINES TERMINATED BY '\n'
                     IGNORE 1 LINES; 
-                """.format(file_name = files[i], table_name = tabelle[i])
+                """.format(path_and_file_name = path + files[i], table_name = tabelle[i])
             cursor.execute(query)
             print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 

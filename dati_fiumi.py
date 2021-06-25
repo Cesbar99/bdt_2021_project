@@ -523,7 +523,7 @@ class MYSQLRivers:
                     ENCLOSED BY '"'
                     LINES TERMINATED BY '\n'
                     IGNORE 1 LINES; 
-                """.format(path_and_file_name = path + files[i], table_name = tabelle[i])
+                """.format(path_and_file_name = path + files[i], table_name = tabelle[i]) #path + files[i]
             cursor.execute(query)
             print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 

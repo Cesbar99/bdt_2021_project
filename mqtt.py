@@ -50,7 +50,7 @@ def on_message(client, userdata, message):
         manager.save(lista_ricevuti, debug = True) 
         #print(message.payload.decode())
     elif message.payload.decode() == '3 file creati! è ora di salvarli':
-        manager.save() #debug = True
+        manager.save(debug=True) #debug = True
     else:
         dic = eval(message.payload.decode())
         print(dic)
@@ -64,6 +64,7 @@ def on_message(client, userdata, message):
     
 
 #broker_address= "broker.hivemq.com"
+print(os.environ.get('my_path'))
 lista_ricevuti = []
 manager = MYSQLRivers()
 broker_address= "broker.emqx.io" #"iot.eclipse.org"," "broker.emqx.io", "mqtt.eclipse.org"

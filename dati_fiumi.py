@@ -517,7 +517,7 @@ class MYSQLRivers:
         cursor.execute(query)
 
         for i in range(len(tabelle)):
-            query = """LOAD DATA LOCAL INFILE {path_and_file_name}
+            query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
                     INTO TABLE {table_name}
                     FIELDS TERMINATED BY ','
                     ENCLOSED BY '"'

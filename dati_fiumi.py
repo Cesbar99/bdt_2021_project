@@ -373,6 +373,7 @@ class manager_dati_nuovi:
     def manage_new_rivers(self, url:str):
         response = requests.get(url)
         raw_fiumi = response.json()
+        #destination_folder = 'test_folder'
 
         for river in raw_fiumi:
             if river['SCODE'] in set(self.discriminants_scode) and river['TYPE'] in set(self.discriminants_type):
@@ -421,17 +422,22 @@ class manager_dati_nuovi:
         print(df)
         del df['NAME']
         df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
-        export_csv = df.to_csv('created_csv_talvera.csv', index = None, header=True)
+        export_csv = df.to_csv('test_folder/created_csv_talvera.csv', index = None, header=True)
+        os.remove('created_json_talvera.json')
+
         df = pd.read_json('created_json_isarco.json')
         print(df)
         del df['NAME']
         df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
-        export_csv = df.to_csv('created_csv_isarco.csv', index = None, header=True)
+        export_csv = df.to_csv('test_folder/created_csv_isarco.csv', index = None, header=True)
+        os.remove('created_json_isarco.json')
+
         df = pd.read_json('created_json_adige.json')
         print(df)
         del df['NAME']
         df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
-        export_csv = df.to_csv('created_csv_adige.csv', index = None, header=True)
+        export_csv = df.to_csv('test_folder/created_csv_adige.csv', index = None, header=True)
+        os.remove('created_json_adige.json')
 
     def publish_new_rivers(self):
         
@@ -505,13 +511,43 @@ class MYSQLRivers:
         #self.connection.close()
         '''
         ######
+        path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+        path = path + 'test_folder/'
+        os.chdir(path)
+
+        files = list(os.listdir())
+        tabelle = []
+
+        #debug: tabelle = ['Try_Isarco', 'Try_Adige', 'Try_Talvera']
+        #no-debug: tabelle = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
+
+        if debug: 
+            for file in files:
+                
+                to_add = file[12:]
+                to_add = to_add[:-4]
+                to_add =  to_add[0].upper() + to_add[1:] 
+                
+                tabelle.append('Try_' + to_add)
+        else:
+            for file in files:
+                
+                to_add = file[12:]
+                to_add = to_add[:-4]
+                to_add =  to_add[0].upper() + to_add[1:] 
+                
+                tabelle.append('Tabella_' + to_add)
+            
+        #print(tabelle)
+        #print(files)
+        ######
+        '''
         if debug: 
             tabelle = ['Try_Isarco', 'Try_Adige', 'Try_Talvera']
         else:
             tabelle = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
         files = ['created_csv_isarco.csv', 'created_csv_adige.csv', 'created_csv_talvera.csv']
-        path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
-
+        '''
         cursor = self.connection.cursor()
         query = 'SET GLOBAL local_infile=1;'
         cursor.execute(query)
@@ -528,13 +564,15 @@ class MYSQLRivers:
             print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 
             os.remove( path+'{file_name}'.format(file_name = files[i]) )
+            '''
             if debug:
                 nome_file = 'created_json_{name}.json'.format(name = tabelle[i][4:].lower())
             else:
                 nome_file = 'created_json_{name}.json'.format(name = tabelle[i][8:].lower())
-            os.remove( path + nome_file )
+                '''
+            #os.remove( path + nome_file )
             print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
-            print( 'Rimosso il file: {file_name}'.format(file_name = nome_file ) )
+            #print( 'Rimosso il file: {file_name}'.format(file_name = nome_file ) )
         
         cursor.close()
 
@@ -624,7 +662,7 @@ class MYSQLRivers:
 
     def check_tables_exist(self):
         cursor = self.connection.cursor()
-        queries = ["SHOW TABLES LIKE 'Tabella_Adige';", "SHOW TABLES LIKE 'Tabella_Isarco';", "SHOW TABLES LIKE 'Tabella_Talvera';", "SHOW TABLES LIKE 'Tabella_Brenta';"]
+        queries = ["SHOW TABLES LIKE 'Tabella_Adige';", "SHOW TABLES LIKE 'Tabella_Isarco';", "SHOW TABLES LIKE 'Tabella_Talvera';", "SHOW TABLES LIKE 'Tabella_nomi';", "SHOW TABLES LIKE 'Try_Adige';","SHOW TABLES LIKE 'Try_Isarco';", "SHOW TABLES LIKE 'Try_Talvera';"]
         non_existing_tables = []
         for i in range(len(queries)):
             cursor.execute(queries[i])
@@ -639,6 +677,9 @@ class MYSQLRivers:
                 if i == 2:
                     print('Tabella Talvera not existing')
                     non_existing_tables.append('Tabella_Talvera')
+                if i == 3:
+                    print('Tabella nomi not existing')
+                    non_existing_tables.append('Tabella_nomi')
 
         cursor.close()
         return non_existing_tables
@@ -648,49 +689,35 @@ class MYSQLRivers:
         cursor = self.connection.cursor()
         # table_name_fiumi = 'Tabella_fiumi' 
         nomi_tabelle = MYSQLRivers.check_tables_exist(self) #['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
-
         if len(nomi_tabelle) > 0:
-            print('Creating table: Tabella_nomi')
-            table_names = 'Tabella_nomi'
-            create_table_names_query = '''
-            CREATE TABLE {table_name} 
-            (
-            Id INT ,
-            Name NVARCHAR(128) NOT NULL
-            )
-            '''.format(table_name = table_names)
+            if 'Tabella_nomi' in nomi_tabelle > 0:
+                print('Creating table: Tabella_nomi')
 
-            cursor.execute(create_table_names_query)
+                table_name = 'Tabella_nomi'
+                create_table_names_query = '''
+                CREATE TABLE {name} 
+                (
+                Id INT ,
+                Name NVARCHAR(128) NOT NULL
+                )
+                '''.format(name = table_name)
+
+                cursor.execute(create_table_names_query)
+                nomi_tabelle.remove('Tabella_nomi')
+
+                names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
+                query = 'INSERT INTO Tabella_nomi(Id, Name) VALUES (%s, %s)'
+
+                for i in range(1, 4):
+                    cursor.execute(query, (i, names[i-1]) )
 
             for table_name in nomi_tabelle:
                 print('Creating table: ', table_name)
                 cursor.execute(MYSQLRivers.query_table(table_name))
 
-            debug_names = ['Try' + nome[7:] for nome in nomi_tabelle] #['Try_Isarco', 'Try_Adige', 'Try_Talvera']
-
-            for name in debug_names:    
-                create_table_query = '''
-                CREATE TABLE {table_name}
-                (
-                Timestamp DATETIME NOT NULL,
-                Q_mean FLOAT (20,2) ,
-                W_mean FLOAT (20,2) ,
-                WT_mean  FLOAT (20,2) ,
-                Stagione NVARCHAR(128) NOT NULL,
-                Id INT
-                )
-                '''.format(table_name = name)
-                cursor.execute(create_table_query)
-
-            names = [" EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD", "ETSCH BEI SIGMUNDSKRON/ADIGE A PONTE ADIGE", "TALFER BEI BOZEN/TALVERA A BOLZANO"] 
-            query = 'INSERT INTO Tabella_nomi(Id, Name) VALUES (%s, %s)'
-
-            for i in range(1, 4):
-                cursor.execute(query, (i, names[i-1]) )
-            
-            print('All tables created, ready to get some data!')
-
             cursor.close()
+                
+            print('All tables created, ready to get some data!')
 
         else:
             print('All tables already present, ready to get new data!')

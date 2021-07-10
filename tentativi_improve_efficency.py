@@ -49,5 +49,3 @@ del df['NAME']
 export_csv = df.to_csv ('created_csv_adige.csv', index = None, header=True)
 
 publisher_str('3 file creati! è ora di salvarli')
-
-

@@ -32,6 +32,7 @@ while True:
     manager.transfer_json()
     manager.from_json_to_csv()
     publisher_str('3 file creati! è ora di salvarli')
+    print('finito')
     time.sleep(3600) #5
 
 #publisher_dic({"TimeStamp":"2019-04-02 16:00:00","NAME":"EISACK BEI BOZEN SÜD/ISARCO A BOLZANO SUD","Q_mean":66.1,"W_mean":137, "Stagione":"Spring", "ID":2})

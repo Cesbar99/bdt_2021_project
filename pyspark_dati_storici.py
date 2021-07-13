@@ -107,18 +107,24 @@ df_3 = spark.sql("select * from df where ID = 3")
 #df_2.show()
 #df_3.show()
 
-df_1.write.option("header",True).csv("test_folder", mode = 'append')
-df_2.write.option("header",True).csv("test_folder", mode = 'append')
-df_3.write.option("header",True).csv("test_folder", mode = 'append')
+
 
 path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
 path = path + 'test_folder'
 os.chdir(path)
 
+#df_1.write.option("header",True).csv(path, mode = 'append')
+#df_2.write.option("header",True).csv(path, mode = 'append')
+#df_3.write.option("header",True).csv(path, mode = 'append')
+df_1.toPandas().to_csv('testo1.csv')
+df_2.toPandas().to_csv('testo2.csv')
+df_3.toPandas().to_csv('testo3.csv')
+'''
+
 for file in list(os.listdir()):
     if file[-3:] != 'csv':
         os.remove(file)
-
+'''
 ids = []
 
 for file in list(os.listdir()):

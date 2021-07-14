@@ -19,6 +19,10 @@ from pyspark.sql.types import *
 import os
 import csv
 from mqtt_fiumi_publisher import publisher_str
+from dati_fiumi import MYSQLRivers, manager_dati_nuovi
+
+manager_mysql = MYSQLRivers()
+manager_mysql.create()
 
 #numeric_val = sc.parallelize([1,2,3,4])
 #numeric_val.map(lambda x:x*x*x).collect()

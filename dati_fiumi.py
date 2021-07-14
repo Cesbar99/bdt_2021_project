@@ -14,9 +14,6 @@ import textwrap
 import math
 import pandas as pd
 
-
-from mqtt_fiumi_publisher import publisher_dic
-
 class Name:
     def __init__(self, scode:str):
         self.name = Name.from_scode_to_name(scode)
@@ -369,34 +366,14 @@ class MYSQLRivers:
 
     def check_tables_exist(self):
         cursor = self.connection.cursor()
-        queries = ["SHOW TABLES LIKE 'Tabella_Adige';", "SHOW TABLES LIKE 'Tabella_Isarco';", "SHOW TABLES LIKE 'Tabella_Talvera';", "SHOW TABLES LIKE 'Tabella_nomi';", "SHOW TABLES LIKE 'Try_Adige';","SHOW TABLES LIKE 'Try_Isarco';", "SHOW TABLES LIKE 'Try_Talvera';"]
+        queries = ["SHOW TABLES LIKE 'Tabella_Adige';", "SHOW TABLES LIKE 'Tabella_Isarco';", "SHOW TABLES LIKE 'Tabella_Talvera';", "SHOW TABLES LIKE 'Tabella_nomi';", "SHOW TABLES LIKE 'Try_Adige';","SHOW TABLES LIKE 'Try_Isarco';", "SHOW TABLES LIKE 'Try_Talvera';", "SHOW TABLES LIKE 'pred_Isarco_Q_mean';", "SHOW TABLES LIKE 'pred_Isarco_W_mean';", "SHOW TABLES LIKE 'pred_Isarco_WT_mean';", "SHOW TABLES LIKE 'pred_Adige_Q_mean';", "SHOW TABLES LIKE 'pred_Adige_W_mean';", "SHOW TABLES LIKE 'pred_Adige_WT_mean';", "SHOW TABLES LIKE 'pred_Talvera_Q_mean';", "SHOW TABLES LIKE 'pred_Talvera_W_mean';", "SHOW TABLES LIKE 'pred_Talvera_WT_mean';"]
         non_existing_tables = []
-        for i in range(len(queries)):
-            cursor.execute(queries[i])
+        for query in queries: 
+            cursor.execute(query)
             output = cursor.fetchall()
             if len(output) == 0:
-                if i == 0:
-                    print('Tabella Adige not existing')
-                    non_existing_tables.append('Tabella_Adige')
-                if i == 1:
-                    print('Tabella Isarco not existing')
-                    non_existing_tables.append('Tabella_Isarco')
-                if i == 2:
-                    print('Tabella Talvera not existing')
-                    non_existing_tables.append('Tabella_Talvera')
-                if i == 3:
-                    print('Tabella nomi not existing')
-                    non_existing_tables.append('Tabella_nomi')
-                if i == 4:
-                    print('Debug table for river Adige not existing')
-                    non_existing_tables.append('Try_Adige')
-                if i == 5:
-                    print('Debug table for river Isarco not existing')
-                    non_existing_tables.append('Try_Isarco')
-                if i == 6:
-                    print('Debug table for river Talvera not existing')
-                    non_existing_tables.append('Try_Talvera')
-
+                non_existing_tables.append(query[18:-2])
+                
         cursor.close()
         return non_existing_tables
 
@@ -406,7 +383,7 @@ class MYSQLRivers:
         # table_name_fiumi = 'Tabella_fiumi' 
         nomi_tabelle = MYSQLRivers.check_tables_exist(self) #['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
         if len(nomi_tabelle) > 0:
-            if 'Tabella_nomi' not in nomi_tabelle:
+            if 'Tabella_nomi' in nomi_tabelle:
                 print('Creating table: Tabella_nomi')
 
                 table_name = 'Tabella_nomi'
@@ -428,9 +405,28 @@ class MYSQLRivers:
                     cursor.execute(query, (i, names[i-1]) )
 
             for table_name in nomi_tabelle:
-                print('Creating table: ', table_name)
-                cursor.execute(MYSQLRivers.query_table(table_name))
+                print('Creating table: ', table_name)                
+                if 'Tabella' in table_name or 'Try' in table_name:
+                    cursor.execute(MYSQLRivers.query_table(table_name))
+                else:
+                    #tabelle = ['pred_Isarco_Q_mean', 'pred_Isarco_W_mean', 'pred_Isarco_WT_mean', 'pred_Adige_Q_mean', 'pred_Adige_W_mean', 'pred_Adige_WT_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_W_mean', 'pred_Talvera_WT_mean']
+                    create_table_query = '''
+                        CREATE TABLE {nome_tabella}
+                        (
+                        Timestamp DATETIME NOT NULL,
+                        {var}_1h FLOAT (20,2) ,
+                        {var}_3h FLOAT (20,2) ,
+                        {var}_12h  FLOAT (20,2) ,
+                        {var}_1d  FLOAT (20,2) ,
+                        {var}_3d  FLOAT (20,2) ,
+                        {var}_1w  FLOAT (20,2) ,
+                        Id INT
+                        )
+                        '''.format(nome_tabella = table_name, var = table_name[-6:])
 
+                    cursor.execute(create_table_query)
+            
+           
             cursor.close()
                 
             print('All tables created, ready to get some data!')

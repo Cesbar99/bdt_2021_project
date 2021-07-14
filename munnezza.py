@@ -398,3 +398,30 @@ def publisher_dic(dic:dict):
     client.publish(os.environ.get('topic'), str(dic)) # I can decide the Qos and if retain or not the message.
     
 #client.username_ow_set('bdt-2021', '') #the broaker is protected by an authentication 
+
+for i in range(len(queries)):
+            cursor.execute(queries[i])
+            output = cursor.fetchall()
+            if len(output) == 0:
+                if i == 0:
+                    print('Tabella Adige not existing')
+                    non_existing_tables.append('Tabella_Adige')
+                if i == 1:
+                    print('Tabella Isarco not existing')
+                    non_existing_tables.append('Tabella_Isarco')
+                if i == 2:
+                    print('Tabella Talvera not existing')
+                    non_existing_tables.append('Tabella_Talvera')
+                if i == 3:
+                    print('Tabella nomi not existing')
+                    non_existing_tables.append('Tabella_nomi')
+                if i == 4:
+                    print('Debug table for river Adige not existing')
+                    non_existing_tables.append('Try_Adige')
+                if i == 5:
+                    print('Debug table for river Isarco not existing')
+                    non_existing_tables.append('Try_Isarco')
+                if i == 6:
+                    print('Debug table for river Talvera not existing')
+                    non_existing_tables.append('Try_Talvera')
+     

@@ -28,7 +28,7 @@ connection = mysql.connector.connect(
 connection.autocommit = True
 cursor = connection.cursor()
 # QUERY DATA BASE
-query = 'SELECT Timestamp, W_mean from Tabella_Isarco' 
+query = 'SELECT Timestamp, W_mean from Tabella_Adige' 
 df = pd.read_sql(query, con=connection)
 print(df)
 # CLEAN THE DATA
@@ -80,7 +80,7 @@ plt.plot(y_20['W_mean'], color = 'green', label= '2020')
 plt.plot(y_19['W_mean'], color = 'red', label = '2019' )
 plt.xlabel('Date')
 plt.ylabel('Water Level')
-plt.title('Water level Isarco')
+plt.title('Water level Adige')
 plt.legend()
 plt.xticks()
 # MODIFICARE I TICKS 
@@ -94,7 +94,7 @@ print(df.loc[df["W_mean"] == df["W_mean"].min()])
 plt.figure(figsize=(16,10), dpi=100)
 plt.plot(df.index, df['W_mean'], color='tab:red')
 # MODIFICARE I TICKS 
-plt.gca().set(title="Water level Isarco", xlabel='Date', ylabel="Water Level")
+plt.gca().set(title="Water level Adige", xlabel='Date', ylabel="Water Level")
 plt.show()
 
 from statsmodels.tsa.seasonal import seasonal_decompose
@@ -186,22 +186,28 @@ pred_12h = start_pred +12
 pred_1d = start_pred + 24
 pred_3d = start_pred + 72
 pred_1w = start_pred + 168
-pred = results.get_prediction(start = pred_12h , dynamic=False)
-pred_ci = pred.conf_int()
-print(type(pred_ci))
+pred_list = [pred_1h, pred_3h, pred_12h, pred_1d, pred_3d, pred_1w]
+list_output = []
 
-plt.figure(figsize=(16,10), dpi=100)
-ax = one_step_df.W_mean_actual[:].plot(label='observed')
-pred.predicted_mean.plot(ax=ax, label='Forecast')
+for pred_time in pred_list:
+    pred = results.get_prediction(start = pred_time , dynamic=False)
+    pred_ci = pred.conf_int()
+    output_l = str(pred_ci['lower W_mean_actual']).split()
+    output_u = str(pred_ci['upper W_mean_actual']).split()
+    output = output_l[1] + ' - ' + output_u[1]
+    list_output.append(output)
+    plt.figure(figsize=(16,10), dpi=100)
+    ax = one_step_df.W_mean_actual[:].plot(label='observed')
+    pred.predicted_mean.plot(ax=ax, label='Forecast')
 
-ax.fill_between(pred_ci.index,
-                pred_ci.iloc[:, 0],
-                pred_ci.iloc[:, 1], color='grey', alpha=1, label = 'confidence interval')
+    ax.fill_between(pred_ci.index,
+                    pred_ci.iloc[:, 0],
+                    pred_ci.iloc[:, 1], color='grey', alpha=1, label = 'confidence interval')
 
-ax.set_xlabel('Date')
-ax.set_ylabel('Temperature (in Celsius)')
-plt.legend()
-plt.xlim([start_pred -100,pred_1w + 50])
-print(pred_ci.iloc[:, 0])
-print(pred_ci.iloc[:, 1])
-plt.show()
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Temperature (in Celsius)')
+    plt.legend()
+    plt.xlim([start_pred -100,pred_1w + 50])
+    print(pred_ci.iloc[:, 0])
+    print(pred_ci.iloc[:, 1])
+    plt.show()

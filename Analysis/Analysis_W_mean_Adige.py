@@ -186,22 +186,28 @@ pred_12h = start_pred +12
 pred_1d = start_pred + 24
 pred_3d = start_pred + 72
 pred_1w = start_pred + 168
-pred = results.get_prediction(start = pred_12h , dynamic=False)
-pred_ci = pred.conf_int()
-print(type(pred_ci))
+pred_list = [pred_1h, pred_3h, pred_12h, pred_1d, pred_3d, pred_1w]
+list_output = []
 
-plt.figure(figsize=(16,10), dpi=100)
-ax = one_step_df.W_mean_actual[:].plot(label='observed')
-pred.predicted_mean.plot(ax=ax, label='Forecast')
+for pred_time in pred_list:
+    pred = results.get_prediction(start = pred_time , dynamic=False)
+    pred_ci = pred.conf_int()
+    output_l = str(pred_ci['lower W_mean_actual']).split()
+    output_u = str(pred_ci['upper W_mean_actual']).split()
+    output = output_l[1] + ' - ' + output_u[1]
+    list_output.append(output)
+    plt.figure(figsize=(16,10), dpi=100)
+    ax = one_step_df.W_mean_actual[:].plot(label='observed')
+    pred.predicted_mean.plot(ax=ax, label='Forecast')
 
-ax.fill_between(pred_ci.index,
-                pred_ci.iloc[:, 0],
-                pred_ci.iloc[:, 1], color='grey', alpha=1, label = 'confidence interval')
+    ax.fill_between(pred_ci.index,
+                    pred_ci.iloc[:, 0],
+                    pred_ci.iloc[:, 1], color='grey', alpha=1, label = 'confidence interval')
 
-ax.set_xlabel('Date')
-ax.set_ylabel('Temperature (in Celsius)')
-plt.legend()
-plt.xlim([start_pred -100,pred_1w + 50])
-print(pred_ci.iloc[:, 0])
-print(pred_ci.iloc[:, 1])
-plt.show()
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Temperature (in Celsius)')
+    plt.legend()
+    plt.xlim([start_pred -100,pred_1w + 50])
+    print(pred_ci.iloc[:, 0])
+    print(pred_ci.iloc[:, 1])
+    plt.show()

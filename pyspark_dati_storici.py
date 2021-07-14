@@ -120,9 +120,10 @@ os.chdir(path)
 #df_1.write.option("header",True).csv(path, mode = 'append')
 #df_2.write.option("header",True).csv(path, mode = 'append')
 #df_3.write.option("header",True).csv(path, mode = 'append')
-df_1.toPandas().to_csv('testo1.csv')
-df_2.toPandas().to_csv('testo2.csv')
-df_3.toPandas().to_csv('testo3.csv')
+
+df_1.toPandas().to_csv('testo1.csv', index = False)
+df_2.toPandas().to_csv('testo2.csv',index = False)
+df_3.toPandas().to_csv('testo3.csv',index = False)
 '''
 
 for file in list(os.listdir()):

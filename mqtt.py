@@ -10,7 +10,7 @@ from dati_fiumi import Rivers, MYSQLRivers
 def on_message(client, userdata, message):
 
     if message.payload.decode() == '3 file creati! è ora di salvarli':
-        manager.save(debug=True) #debug = True
+        manager.save(debug=False) #debug = True
     
 ########################################
     

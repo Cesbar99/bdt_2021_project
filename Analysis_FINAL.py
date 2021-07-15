@@ -22,7 +22,7 @@ from mqtt_fiumi_publisher import publisher_str
 
 
 
-def Analysis(river_name :str, variable :str, connection):
+def Analysis(river_name :str, variable :str):
 
     connection = mysql.connector.connect(
         host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
@@ -222,6 +222,16 @@ def Analysis(river_name :str, variable :str, connection):
 
 def prediction(modelname:str, variable: str, river_name:str):
 
+    connection = mysql.connector.connect(
+        host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
+        port =  3310,
+        database = 'database_fiumi',  #'rivers_db'
+        user = os.environ.get('user'), #root, user_new
+        password = os.environ.get('password'), #password, passwordnew_user
+        allow_local_infile = True
+        )
+    connection.autocommit = True
+
     path = os.environ.get('my_path') 
     filename = path + modelname
     results = pickle.load(open(filename, 'rb'))
@@ -287,26 +297,17 @@ def prediction(modelname:str, variable: str, river_name:str):
     csvname = path+'predictions_folder/predictions_{model}.csv'.format(model=modelname)
     dataframe.to_csv(csvname,index=False)
 
+    connection.close()
+
 def make_predictions():
 
-    connection = mysql.connector.connect(
-        host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
-        port =  3310,
-        database = 'database_fiumi',  #'rivers_db'
-        user = os.environ.get('user'), #root, user_new
-        password = os.environ.get('password'), #password, passwordnew_user
-        allow_local_infile = True
-        )
-    connection.autocommit = True
-
-    prediction('Tabella_Isarco-Q_mean_model', 'Q_mean', 'Tabella_Isarco', connection)
-    prediction('Tabella_Isarco-W_mean_model', 'W_mean', 'Tabella_Isarco', connection)
-    prediction('Tabella_Isarco-WT_mean_model', 'WT_mean', 'Tabella_Isarco', connection)
-    prediction('Tabella_Adige-Q_mean_model', 'Q_mean', 'Tabella_Adige', connection)
-    prediction('Tabella_Adige-W_mean_model', 'W_mean', 'Tabella_Adige', connection)
-    prediction('Tabella_Adige-WT_mean_model', 'WT_mean', 'Tabella_Adige', connection)
-    prediction('Tabella_Talvera-Q_mean_model', 'Q_mean', 'Tabella_Talvera', connection)
-    prediction('Tabella_Talvera-W_mean_model', 'W_mean', 'Tabella_Talvera', connection)
-    prediction('Tabella_Talvera-WT_mean_model', 'WT_mean', 'Tabella_Talvera', connection)
+    prediction('Tabella_Isarco-Q_mean_model', 'Q_mean', 'Tabella_Isarco')
+    prediction('Tabella_Isarco-W_mean_model', 'W_mean', 'Tabella_Isarco')
+    prediction('Tabella_Isarco-WT_mean_model', 'WT_mean', 'Tabella_Isarco')
+    prediction('Tabella_Adige-Q_mean_model', 'Q_mean', 'Tabella_Adige')
+    prediction('Tabella_Adige-W_mean_model', 'W_mean', 'Tabella_Adige')
+    prediction('Tabella_Adige-WT_mean_model', 'WT_mean', 'Tabella_Adige')
+    prediction('Tabella_Talvera-Q_mean_model', 'Q_mean', 'Tabella_Talvera')
+    prediction('Tabella_Talvera-W_mean_model', 'W_mean', 'Tabella_Talvera')
+    prediction('Tabella_Talvera-WT_mean_model', 'WT_mean', 'Tabella_Talvera')
     publisher_str('Previsioni completate, salvale!')
-    connection.close()

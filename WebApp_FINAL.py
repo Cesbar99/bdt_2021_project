@@ -32,6 +32,7 @@ import json
 from bokeh.plotting import figure
 from Analysis_FINAL import * 
 
+
 connection = mysql.connector.connect(
         host=  os.environ.get('host'), 
         port=  3310,
@@ -42,9 +43,11 @@ connection = mysql.connector.connect(
 connection.autocommit = True
 cursor = connection.cursor()
 
+connection.close()
+
 
 st.title('Analysis of Rivers in the Bolzano\'s Area')
-
+"""
 audio_file = open('river.ogg', 'rb')
 audio_bytes = audio_file.read()
 st.audio(audio_bytes, format='audio/ogg')
@@ -415,4 +418,4 @@ ax.set_ylabel('Temperature (in Celsius)')
 plt.legend()
 plt.xlim([start_pred -100,pred_1w + 50])'''
 
-# connection.close()
+# connection.close()"""

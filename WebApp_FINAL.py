@@ -51,15 +51,8 @@ st.audio(audio_bytes, format='audio/ogg')
 
 # Create map object
 m = folium.Map(location=[46.486835, 11.335177], zoom_start=12) # COORDINATE BOZEN 
-
 # Global tooltip
 tooltip = 'Click For More Info'
-# Create custom marker icon
-# logoIcon = folium.features.CustomIcon('logo.png', icon_size=(50, 50))
-
-# Vega data
-#vis = os.path.join('data', 'vis.json')
-
 # Percorso talvera 
 path_t = [(46.495619, 11.347877), (46.499680, 11.346658), (46.506887, 11.349619), (46.510753, 11.350403), (46.511931, 11.350571), (46.513579, 11.353640), (46.514927,11.357624),
 (46.517354, 11.357581)]
@@ -69,7 +62,6 @@ path_is = [(46.494716, 11.387254), (46.492876, 11.370051), (46.493996, 11.353545
 (46.450954, 11.306785)]
 # Geojson Data
 overlay = os.path.join('data', 'overlay.json')
-
 # Create markers
 folium.Marker([46.494716, 11.387254],
                 popup='<strong>Isarco</strong>',
@@ -93,13 +85,8 @@ folium.PolyLine(path_is,
                     weight= 5,
                     opacity=0.8).add_to(m),
 
-                
-
-
-
 # call to render Folium map in Streamlit
 folium_static(m)
-
 
 # SIDE BARS
 
@@ -107,20 +94,16 @@ folium_static(m)
 st.sidebar.header('Menù')
 
 data_set_name =  add_selectbox = st.sidebar.selectbox(
-    "which river you want to know about ?",
+    "which river do you want to know about ?",
     ("Adige", "Isarco", "Talvera")
 )
 
 variable_name_key =  add_selectbox = st.sidebar.selectbox(
-    "which measure you want to know about ?",
+    "which measure do you want to know about ?",
     ("Water Level", "Water Temperature", "Flow_Rate")
 )
 
 diz_measures = {'Water Level' : 'W_mean', 'Water Temperature': 'WT_mean', 'Flow_Rate' : 'Q_mean'}
-
- 
-
-
 
 def query_db(data_set_name,variable_name_key):
     query = 'SELECT Timestamp, {variable} from Tabella_{name}'.format(variable = diz_measures[variable_name_key] , name = data_set_name)
@@ -359,7 +342,7 @@ st.write('The {variable} in {time_correct} will be {result}'.format(variable = v
 
 ## PLOT PREDICTIONS 
 
-ax = one_step_df.W_mean_actual[:].plot(label='observed')
+'''ax = one_step_df.W_mean_actual[:].plot(label='observed')
 pred.predicted_mean.plot(ax=ax, label='Forecast')
 
 ax.fill_between(pred_ci.index,
@@ -369,4 +352,4 @@ ax.fill_between(pred_ci.index,
 ax.set_xlabel('Date')
 ax.set_ylabel('Temperature (in Celsius)')
 plt.legend()
-plt.xlim([start_pred -100,pred_1w + 50])
+plt.xlim([start_pred -100,pred_1w + 50])'''

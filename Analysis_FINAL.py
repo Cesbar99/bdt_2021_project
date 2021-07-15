@@ -264,12 +264,29 @@ def prediction(modelname:str, variable: str, river_name:str, connection):
 
     #connection.close()
     #print(list_output)
-    data = {'1h':list_output[0], '3h':list_output[1], '12h':list_output[2], '1d':list_output[3], '3d':list_output[4], '1w':list_output[5]}
+    if river_name == 'Tabella_Isarco':
+        id = 1
+    elif river_name == 'Tabella_Adige':
+        id = 2
+    else:
+        id = 3
+    data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':(float(list_output[0].split(' - ')[0]) + float(list_output[0].split(' - ')[1]) )/2, '3h':(float(list_output[1].split(' - ')[0]) + float(list_output[1].split(' - ')[1]) )/2, '12h':(float(list_output[2].split(' - ')[0]) + float(list_output[2].split(' - ')[1]) )/2, '1d':(float(list_output[3].split(' - ')[0]) + float(list_output[3].split(' - ')[1]) )/2, '3d':(float(list_output[4].split(' - ')[0]) + float(list_output[4].split(' - ')[1]) )/2, '1w':(float(list_output[5].split(' - ')[0]) + float(list_output[5].split(' - ')[1]) )/2, 'Id':id}
     dataframe = pd.DataFrame(data, index=[0])
     csvname = path+'predictions_folder/predictions_{model}.csv'.format(model=modelname)
     dataframe.to_csv(csvname,index=False)
 
 def make_predictions():
+
+    connection = mysql.connector.connect(
+        host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
+        port =  3310,
+        database = 'database_fiumi',  #'rivers_db'
+        user = os.environ.get('user'), #root, user_new
+        password = os.environ.get('password'), #password, passwordnew_user
+        allow_local_infile = True
+        )
+    connection.autocommit = True
+
     prediction('Tabella_Isarco-Q_mean_model', 'Q_mean', 'Tabella_Isarco', connection)
     prediction('Tabella_Isarco-W_mean_model', 'W_mean', 'Tabella_Isarco', connection)
     prediction('Tabella_Isarco-WT_mean_model', 'WT_mean', 'Tabella_Isarco', connection)
@@ -279,4 +296,4 @@ def make_predictions():
     prediction('Tabella_Talvera-Q_mean_model', 'Q_mean', 'Tabella_Talvera', connection)
     prediction('Tabella_Talvera-W_mean_model', 'W_mean', 'Tabella_Talvera', connection)
     prediction('Tabella_Talvera-WT_mean_model', 'WT_mean', 'Tabella_Talvera', connection)
-    publisher_str('Previsioni completate, salavale!')
+    publisher_str('Previsioni completate, salvale!')

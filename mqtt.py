@@ -14,7 +14,7 @@ def on_message(client, userdata, message):
         manager.save(debug=False) #debug = True
     elif message.payload.decode() == 'Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?':
         make_predictions()
-    elif message.payload.decode() == 'Previsioni completate, salavale!':
+    elif message.payload.decode() == 'Previsioni completate, salvale!':
         manager.save(debug=False, prediction=True) #debug = True
    
 ########################################

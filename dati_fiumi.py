@@ -278,57 +278,86 @@ class MYSQLRivers:
         cursor.execute(query)
         cursor.close()
     
-    def save(self, debug = None) -> None:
-        
-        path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
-        path = path + 'test_folder/'
-        os.chdir(path)
+    def save(self, debug = None, prediction=None) -> None:
 
-        files = list(os.listdir())
-        tabelle = []
+        if not prediction:
+            path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+            path = path + 'test_folder/'
+            os.chdir(path)
 
-        #debug: tabelle = ['Try_Isarco', 'Try_Adige', 'Try_Talvera']
-        #no-debug: tabelle = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
+            files = list(os.listdir())
+            tabelle = []
 
-        if debug: 
-            for file in files:
-                
-                to_add = file[12:]
-                to_add = to_add[:-4]
-                to_add =  to_add[0].upper() + to_add[1:] 
-                
-                tabelle.append('Try_' + to_add)
-        else:
-            for file in files:
-                
-                to_add = file[12:]
-                to_add = to_add[:-4]
-                to_add =  to_add[0].upper() + to_add[1:] 
-                
-                tabelle.append('Tabella_' + to_add)
+            #debug: tabelle = ['Try_Isarco', 'Try_Adige', 'Try_Talvera']
+            #no-debug: tabelle = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
 
-        cursor = self.connection.cursor()
-        query = 'SET GLOBAL local_infile=1;'
-        cursor.execute(query)
+            if debug: 
+                for file in files:
+                    
+                    to_add = file[12:]
+                    to_add = to_add[:-4]
+                    to_add =  to_add[0].upper() + to_add[1:] 
+                    
+                    tabelle.append('Try_' + to_add)
+            else:
+                for file in files:
+                    
+                    to_add = file[12:]
+                    to_add = to_add[:-4]
+                    to_add =  to_add[0].upper() + to_add[1:] 
+                    
+                    tabelle.append('Tabella_' + to_add)
 
-        for i in range(len(tabelle)):
-            query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
-                    INTO TABLE {table_name}
-                    FIELDS TERMINATED BY ','
-                    ENCLOSED BY '"'
-                    LINES TERMINATED BY '\n'
-                    IGNORE 1 LINES; 
-                """.format(path_and_file_name = path + files[i], table_name = tabelle[i]) #path + files[i]
+            cursor = self.connection.cursor()
+            query = 'SET GLOBAL local_infile=1;'
             cursor.execute(query)
-            print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 
-            os.remove( path+'{file_name}'.format(file_name = files[i]) )
-            print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
-         
-        cursor.close()
+            for i in range(len(tabelle)):
+                query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
+                        INTO TABLE {table_name}
+                        FIELDS TERMINATED BY ','
+                        ENCLOSED BY '"'
+                        LINES TERMINATED BY '\n'
+                        IGNORE 1 LINES; 
+                    """.format(path_and_file_name = path + files[i], table_name = tabelle[i]) #path + files[i]
+                cursor.execute(query)
+                print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 
-        print('Terminato con successo!')
-        print('')
+                os.remove( path+'{file_name}'.format(file_name = files[i]) )
+                print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
+            
+            cursor.close()
+
+            print('Terminato con successo!')
+            print('')
+
+        else:
+            
+            cursor = self.connection.cursor()
+            path = os.environ.get('my_path')
+            path = path + 'predictions_folder/'
+            os.chdir(path)
+            files = list(os.listdir())
+            tabelle = ['pred_Adige_Q_mean', 'pred_Adige_W_mean', 'pred_Adige_WT_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_W_mean', 'pred_Isarco_WT_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_W_mean', 'pred_Talvera_WT_mean']
+            for i in range(len(tabelle)):
+                query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
+                            INTO TABLE {table_name}
+                            FIELDS TERMINATED BY ','
+                            ENCLOSED BY '"'
+                            LINES TERMINATED BY '\n'
+                            IGNORE 1 LINES; 
+                        """.format(path_and_file_name = path + files[i], table_name = tabelle[i]) #path + files[i]
+                cursor.execute(query)
+                print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
+
+                os.remove( path+'{file_name}'.format(file_name = files[i]) )
+                print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
+
+            cursor.close()
+
+            print('Terminato con successo!')
+            print('')
+
 
     def query_table(nome_tabella:str) -> str:
         create_table_query = '''

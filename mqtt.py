@@ -12,6 +12,9 @@ def on_message(client, userdata, message):
     if message.payload.decode() == '3 file creati! è ora di salvarli':
         manager.save(debug=False) #debug = True
     
+    elif message.payload.decode() == 'Predictions computed, save them!':
+        manager.save(debug=False, prediction=True) #debug = True
+   
 ########################################
     
 lista_ricevuti = []

@@ -22,7 +22,6 @@ from mqtt_fiumi_publisher import publisher_str
 
 
 
-
 def Analysis(river_name :str, variable :str, connection):
      
     # QUERY DATA BASE
@@ -269,4 +268,15 @@ def prediction(modelname:str, variable: str, river_name:str, connection):
     dataframe = pd.DataFrame(data, index=[0])
     csvname = path+'predictions_folder/predictions_{model}.csv'.format(model=modelname)
     dataframe.to_csv(csvname,index=False)
-    publisher_str('Predictions computed, save them!')
+
+def make_predictions():
+    prediction('Tabella_Isarco-Q_mean_model', 'Q_mean', 'Tabella_Isarco', connection)
+    prediction('Tabella_Isarco-W_mean_model', 'W_mean', 'Tabella_Isarco', connection)
+    prediction('Tabella_Isarco-WT_mean_model', 'WT_mean', 'Tabella_Isarco', connection)
+    prediction('Tabella_Adige-Q_mean_model', 'Q_mean', 'Tabella_Adige', connection)
+    prediction('Tabella_Adige-W_mean_model', 'W_mean', 'Tabella_Adige', connection)
+    prediction('Tabella_Adige-WT_mean_model', 'WT_mean', 'Tabella_Adige', connection)
+    prediction('Tabella_Talvera-Q_mean_model', 'Q_mean', 'Tabella_Talvera', connection)
+    prediction('Tabella_Talvera-W_mean_model', 'W_mean', 'Tabella_Talvera', connection)
+    prediction('Tabella_Talvera-WT_mean_model', 'WT_mean', 'Tabella_Talvera', connection)
+    publisher_str('Previsioni completate, salavale!')

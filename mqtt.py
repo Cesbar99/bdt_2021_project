@@ -2,6 +2,7 @@ import os
 import paho.mqtt.client as mqtt #import the client1
 import time
 from datetime import datetime
+from Analysis_FINAL import make_predictions
 
 from dati_fiumi import Rivers, MYSQLRivers
 
@@ -11,8 +12,9 @@ def on_message(client, userdata, message):
 
     if message.payload.decode() == '3 file creati! è ora di salvarli':
         manager.save(debug=False) #debug = True
-    
-    elif message.payload.decode() == 'Predictions computed, save them!':
+    elif message.payload.decode() == 'Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?':
+        make_predictions()
+    elif message.payload.decode() == 'Previsioni completate, salavale!':
         manager.save(debug=False, prediction=True) #debug = True
    
 ########################################

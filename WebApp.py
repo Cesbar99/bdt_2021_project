@@ -1,93 +1,73 @@
-import streamlit as st 
+import streamlit as st
+import numpy as np
+import mysql
+import os
+import matplotlib.pyplot as plt
 import pandas as pd 
-from PIL import Image
+import mysql.connector
+import pandas as pd 
+import numpy as np 
+import os 
+import datetime
+from pandas import *
+from pandas.plotting import lag_plot, autocorrelation_plot
+import matplotlib.pyplot as plt 
+from statsmodels.tsa.ar_model import AutoReg
+from statsmodels.graphics.tsaplots import plot_acf
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+import mysql.connector
+from statsmodels.graphics.tsaplots import plot_pacf
+from statsmodels.tsa.arima_process import ArmaProcess
+from statsmodels.tsa.stattools import pacf
+from statsmodels.regression.linear_model import yule_walker
+from statsmodels.tsa.stattools import adfuller
+from mysql.connector import connection
+import seaborn as sns 
 
-# Add a title and an image
-st.write("""
-# Stock market web application
-**Visually** show data on a stock! Data range from Jan 2, 2020- Aug 4 2020.
-""")
 
-image = Image.open('C:/Users/alber/Desktop/UniTn/Data Science/Second_Semester/Big_data/Project/map.png')
-st.image(image, use_column_width= True)
 
-# Create side bar header
-st.sidebar.header('User Input')
-'''
-# Create a function to get the users input
-def get_input():
-    start_date = st.sidebar.text_input('Start Date', '2019-02-28 00:00:00')
-    end_date = st.sidebar.text_input('End Date', '2021-06-20 23:00:00')
-    River_symbol = st.sidebar.text_input('River Symbol', 'ISARCO')
-    return start_date, end_date, River_symbol
+connection = mysql.connector.connect(
+        host=  os.environ.get('host'), 
+        port=  3310,
+        database = 'database_fiumi',  #'rivers_db'
+        user =  os.environ.get('user'),
+        password = os.environ.get('password')
+        )
+connection.autocommit = True
+cursor = connection.cursor()
+query = 'SELECT Timestamp, WT_mean from Tabella_Talvera' 
+df = pd.read_sql(query, con=connection)
+# print(df)
 
-def get_river_name(symbol):
-    if symbol == 'ISARCO':
-        return 'Isarco'
-    elif symbol == 'TALVERA':
-        return 'Talvera'
-    elif symbol == 'ADIGE':
-        return 'Adige'
-    else: 
-        None
+df = pd.read_sql(query, con=connection)
 
-# Create a function to get the proper river data and the proper timeframe from the user start date to the user end data
-def get_data(symbol, start, end):
-     
-     # Load the data 
-    if symbol.upper() == 'ISARCO':
-        df = pd.read_csv('')
-    
-    elif symbol.upper() == 'ISARCO':
-        df = pd.read_csv('')
-    
-    elif symbol.upper() == 'ISARCO':
-        df = pd.read_csv('')
-    else:
-        df = pd.DataFrame(columns=['Timestamp', 'Variable'])
+# CLEAN THE DATA
+droppare = []
+i = 0 
+while i < (len(df['WT_mean'])):
+        if np.isnan(df['WT_mean'].iloc[i]):
+                droppare.append(i)
+        i += 1
 
-    # Get the data range 
-    start = pd.to_datetime(start)
-    end = pd.to_datetime(end)
+for j in droppare :
+    df =  df.drop(j)
 
-    # Set the start and end index rows both to 0 
-    start_row = 0 
-    end_row = 0
 
-    # Start the date from the data set and go down to see if the users start date is less than or equal to the data in the data set
-    for i in range(0 ,len(df)):
-        if start <= pd.to_datetime(df['Timestamp'][i]):
-            start_row = i 
-            break 
 
-    # Start from the bottom of the data set and go up to see if the users end data is greater than or equalto the date into the data set 
+df = df.reset_index()
+y_19 = df.iloc[:7107]
+y_20 = df.iloc[7107:15888]
+y_21 = df.iloc[15922:]
 
-    for j in range(0, len(df)):
-        if end >= pd.to_datetime(df['Date'][len(df)-1-j]):
-            end_row = len(df) - 1 - j 
-            break 
 
-    # Set the index to 
-    df = df.set_index(pd.DatetimeIndex(df['Date'].values))
 
-    return df.iloc[start_row:end_row + 1]
+plt.plot(y_21['WT_mean'], label = '2021')
+plt.plot(y_20['WT_mean'], color = 'green', label= '2020')
+plt.plot(y_19['WT_mean'], color = 'red', label = '2019' )
+plt.xlabel('Date')
+plt.ylabel('Water Level')
+plt.title('Water level Isarco')
+plt.legend()
 
-# Get the users input
-start, end, symbol = get_input()
-# Get data 
-df = get_data(symbol, start, end)
-# Get the company name
-company_name = get_river_name(symbol.upper())
-
-# Display the close price 
-st.header(company_name + 'Close Price\n')
-st.line_chart(df['Close'])
-
-# Display the close price 
-st.header(company_name + 'Volume\n')
-st.line_chart(df['Volume'])
-
-# Get statistics 
-st.header('Data Statistics')
-st.write(df.describe())
-'''
+st.line_chart(df['WT_mean'])

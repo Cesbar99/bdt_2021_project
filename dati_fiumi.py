@@ -1,5 +1,6 @@
 
 from __future__ import absolute_import, annotations
+from mqtt_fiumi_publisher import publisher_str
 import mysql.connector
 from mysql.connector import connection
 import os
@@ -328,6 +329,8 @@ class MYSQLRivers:
             
             cursor.close()
 
+            publisher_str('Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?')
+            
             print('Terminato con successo!')
             print('')
 

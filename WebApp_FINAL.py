@@ -51,15 +51,8 @@ st.audio(audio_bytes, format='audio/ogg')
 
 # Create map object
 m = folium.Map(location=[46.486835, 11.335177], zoom_start=12) # COORDINATE BOZEN 
-
 # Global tooltip
 tooltip = 'Click For More Info'
-# Create custom marker icon
-# logoIcon = folium.features.CustomIcon('logo.png', icon_size=(50, 50))
-
-# Vega data
-#vis = os.path.join('data', 'vis.json')
-
 # Percorso talvera 
 path_t = [(46.495619, 11.347877), (46.499680, 11.346658), (46.506887, 11.349619), (46.510753, 11.350403), (46.511931, 11.350571), (46.513579, 11.353640), (46.514927,11.357624),
 (46.517354, 11.357581)]
@@ -69,7 +62,6 @@ path_is = [(46.494716, 11.387254), (46.492876, 11.370051), (46.493996, 11.353545
 (46.450954, 11.306785)]
 # Geojson Data
 overlay = os.path.join('data', 'overlay.json')
-
 # Create markers
 folium.Marker([46.494716, 11.387254],
                 popup='<strong>Isarco</strong>',
@@ -93,13 +85,8 @@ folium.PolyLine(path_is,
                     weight= 5,
                     opacity=0.8).add_to(m),
 
-                
-
-
-
 # call to render Folium map in Streamlit
 folium_static(m)
-
 
 # SIDE BARS
 
@@ -107,20 +94,16 @@ folium_static(m)
 st.sidebar.header('Menù')
 
 data_set_name =  add_selectbox = st.sidebar.selectbox(
-    "which river you want to know about ?",
+    "which river do you want to know about ?",
     ("Adige", "Isarco", "Talvera")
 )
 
 variable_name_key =  add_selectbox = st.sidebar.selectbox(
-    "which measure you want to know about ?",
+    "which measure do you want to know about ?",
     ("Water Level", "Water Temperature", "Flow_Rate")
 )
 
 diz_measures = {'Water Level' : 'W_mean', 'Water Temperature': 'WT_mean', 'Flow_Rate' : 'Q_mean'}
-
- 
-
-
 
 def query_db(data_set_name,variable_name_key):
     query = 'SELECT Timestamp, {variable} from Tabella_{name}'.format(variable = diz_measures[variable_name_key] , name = data_set_name)
@@ -142,6 +125,62 @@ def query_db(data_set_name,variable_name_key):
     return df
 
 
+df = query_db(data_set_name, variable_name_key)
+# CREATING THE DF FOR THE ANALYSIS
+# Shift the current temperature to the next day. 
+variable = diz_measures[variable_name_key]
+predicted_df = df[variable].to_frame().shift(1).rename(columns = {variable:  'variable_pred' })
+actual_df = df[variable].to_frame().rename(columns = {variable: "variable_actual" })
+
+# Concatenate the actual and predicted temperature
+one_step_df = pd.concat([actual_df,predicted_df],axis=1)
+
+# Select from the second row, because there is no prediction for today due to shifting.
+one_step_df = one_step_df[1:]
+
+
+import itertools
+
+# Define the p, d and q parameters to take any value between 0 and 2
+p = d = q = range(0, 2)
+
+# Generate all different combinations of p, q and q triplets
+pdq = list(itertools.product(p, d, q))
+
+# Generate all different combinations of seasonal p, q and q triplets
+seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
+
+
+import warnings
+warnings.filterwarnings("ignore") # specify to ignore warning messages
+
+
+for param in pdq:
+    for param_seasonal in seasonal_pdq:
+        try:
+            mod = sm.tsa.statespace.SARIMAX(one_step_df.variable_actual,
+                                            order=param,
+                                            seasonal_order=param_seasonal,
+                                            enforce_stationarity=False,
+                                            enforce_invertibility=False)
+
+            results = mod.fit()
+
+            
+        except:
+            continue
+
+import statsmodels.api as sm
+
+# Fit the SARIMAX model using optimal parameters
+mod = sm.tsa.statespace.SARIMAX(one_step_df.variable_actual,
+                                order=(1, 1, 1),
+                                seasonal_order=(1, 1, 1, 12),
+                                enforce_stationarity=False,
+                                enforce_invertibility=False)
+
+results = mod.fit()
+
 
 
 # CHECKBOX TO SHOW DATAFRAMES 
@@ -154,13 +193,6 @@ if st.checkbox('Show dataframe'):
 st.write('Let\'s take a look to the data')
 st.line_chart(query_db(data_set_name,variable_name_key)[diz_measures[variable_name_key]])
 
-# Attempt line chart bokeh 
-#df_use = query_db(data_set_name,variable_name_key)
-#p = figure(title = variable_name_key + '-' + data_set_name, x_axis_label = 'Date', y_axis_label = diz_measures[variable_name_key])
-#p.line(df_use['Timestamp'], df_use[diz_measures[variable_name_key]])
-#st.bokeh_chart(p, use_container_width=True)
-
-
 # CHECKBOX FOR PREDICTION 
 
 #st.selectbox('Choose the prediction time',
@@ -168,21 +200,33 @@ st.line_chart(query_db(data_set_name,variable_name_key)[diz_measures[variable_na
 
 time = st.slider('Decide how far to move in the future (hrs) ', 1 , 168)
 
-def prediction(time, variable_name_key, data_set_name):
-
-    path = os.environ.get('my_path') 
-    filename = path + data_set_name + '-' + diz_measures[variable_name_key] + '_model'
-    results = pickle.load(open(filename, 'rb'))
-    pred_time = time + len(chart_data)
+def prediction_interval(time, variable_name_key):
+    
+    pred_time = time + len(df)
     pred = results.get_prediction(start = pred_time , dynamic=False)
     pred_ci = pred.conf_int()
     output_l = str(pred_ci['lower {variable_name}_actual']).split()
     output_u = str(pred_ci['upper {variable_name}_actual'.format(variable_name = diz_measures[variable_name_key])]).split()
     output = output_l[1] + ' - ' + output_u[1]
+    plt.figure(figsize=(16,10), dpi=100)
+    ax = one_step_df.W_mean_actual[:].plot(label='observed')
+    pred.predicted_mean.plot(ax=ax, label='Forecast')
+
+    ax.fill_between(pred_ci.index,
+                    pred_ci.iloc[:, 0],
+                    pred_ci.iloc[:, 1], color='grey', alpha=1, label = 'confidence interval')
+
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Temperature (in Celsius)')
+    plt.legend()
+    plt.xlim([pred_time -100, pred_time + 150])
     
     
-    
+    st.pyplot()
     return output
+
+
+
 
 diz_times = {1: 'two hour',
             2: 'two hours',
@@ -354,12 +398,12 @@ diz_times = {1: 'two hour',
             168: 'one week '}
 
 
-st.write('The {variable} in {time_correct} will be {result}'.format(variable = variable_name_key, time_correct = diz_times[time], result = prediction(time, variable_name_key)  ))
+st.write('The {variable} in {time_correct} will be {result}'.format(variable = variable_name_key, time_correct = diz_times[time], result = prediction_interval(time, variable_name_key)  ))
 
 
 ## PLOT PREDICTIONS 
 
-ax = one_step_df.W_mean_actual[:].plot(label='observed')
+'''ax = one_step_df.W_mean_actual[:].plot(label='observed')
 pred.predicted_mean.plot(ax=ax, label='Forecast')
 
 ax.fill_between(pred_ci.index,
@@ -369,4 +413,6 @@ ax.fill_between(pred_ci.index,
 ax.set_xlabel('Date')
 ax.set_ylabel('Temperature (in Celsius)')
 plt.legend()
-plt.xlim([start_pred -100,pred_1w + 50])
+plt.xlim([start_pred -100,pred_1w + 50])'''
+
+# connection.close()

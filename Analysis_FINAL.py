@@ -14,10 +14,11 @@ from statsmodels.tsa.arima_process import ArmaProcess
 from statsmodels.tsa.stattools import pacf
 from statsmodels.regression.linear_model import yule_walker
 from statsmodels.tsa.stattools import adfuller
+import statsmodels.api as sm
 from mysql.connector import connection
 import seaborn as sns 
 import pickle
-
+from mqtt_fiumi_publisher import publisher_str
 
 
 
@@ -26,7 +27,7 @@ def Analysis(river_name :str, variable :str, connection):
     # QUERY DATA BASE
     query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
     df = pd.read_sql(query, con=connection)
-    print(df)
+    #print(df)
     # CLEAN THE DATA
     droppare = []
     i = 0 
@@ -40,7 +41,7 @@ def Analysis(river_name :str, variable :str, connection):
 
     df = df.reset_index()
 
-    df.describe()
+    #df.describe()
 
     #Create a df for the year 2019
     y_19 = df.iloc[:7108]  ### ??? check 
@@ -60,10 +61,10 @@ def Analysis(river_name :str, variable :str, connection):
     start_time = str(start_time)
     start_time = start_time.split()
     start_time = start_time[0]
-    print(start_time)
+    #print(start_time)
     x_data = pd.date_range(start_time, periods=30, freq='MS') 
     # Check how this dates looks like:
-    print(x_data)
+    #print(x_data)
     for i in range(len(df)):
         ticks.append(i)
         
@@ -71,9 +72,9 @@ def Analysis(river_name :str, variable :str, connection):
 
 
     plt.figure(figsize=(16,10), dpi=100)
-    plt.plot(y_21[variable], label = '2021')
-    plt.plot(y_20[variable], color = 'green', label= '2020')
-    plt.plot(y_19[variable], color = 'red', label = '2019' )
+    plt.plot(y_21['Timestamp'], y_21[variable], label = '2021')
+    plt.plot(y_20['Timestamp'], y_20[variable], color = 'green', label= '2020')
+    plt.plot(y_19['Timestamp'],y_19[variable], color = 'red', label = '2019' )
     plt.xlabel('Date')
     name_river = river_name.split('_')
     name_river = name_river[1]
@@ -90,15 +91,15 @@ def Analysis(river_name :str, variable :str, connection):
     plt.legend()
     plt.xticks()
     # MODIFICARE I TICKS 
-    plt.show()
+    #plt.show()
 
     # Output the maximum and minimum temperature date
-    print(df.loc[df[variable] == df[variable].max()])
-    print(df.loc[df[variable] == df[variable].min()])
+    #print(df.loc[df[variable] == df[variable].max()])
+    #print(df.loc[df[variable] == df[variable].min()])
 
     # Plot the daily temperature change 
     plt.figure(figsize=(16,10), dpi=100)
-    plt.plot(df.index, df[variable], color='tab:red')
+    plt.plot(df['Timestamp'], df[variable], color='tab:red')
     # MODIFICARE I TICKS 
     if variable == 'W_mean':
         plt.gca().set(title="Water level {name}".format(name = name_river) , xlabel='Date', ylabel="Water Level")    
@@ -107,17 +108,17 @@ def Analysis(river_name :str, variable :str, connection):
     else:
         plt.gca().set(title="Water Temperature {name}".format(name = name_river) , xlabel='Date', ylabel="Water Temperature")
     
-    plt.show()
+    #plt.show()
 
     from statsmodels.tsa.seasonal import seasonal_decompose
 
     # Additive Decomposition
-    result_add = seasonal_decompose(df.variable, model='additive', extrapolate_trend='freq', freq=365)
+    result_add = seasonal_decompose(df[variable], model='additive', extrapolate_trend='freq', freq=365)
 
     # Plot
     plt.rcParams.update({'figure.figsize': (10,10)})
     result_add.plot().suptitle('Additive Decomposition', fontsize=22)
-    plt.show()
+    #plt.show()
 
     # Shift the current temperature to the next day. 
     predicted_df = df[variable].to_frame().shift(1).rename(columns = {variable: "variable_pred" })
@@ -128,7 +129,7 @@ def Analysis(river_name :str, variable :str, connection):
 
     # Select from the second row, because there is no prediction for today due to shifting.
     one_step_df = one_step_df[1:]
-    one_step_df.head(10)
+    #one_step_df.head(10)
 
 
     from sklearn.metrics import mean_squared_error as MSE
@@ -136,7 +137,7 @@ def Analysis(river_name :str, variable :str, connection):
 
     # Calculate the RMSE
     temp_pred_err = MSE(one_step_df.variable_actual, one_step_df.variable_pred, squared=False)
-    print("The RMSE is",temp_pred_err)
+    #print("The RMSE is",temp_pred_err)
 
 
     import itertools
@@ -150,11 +151,13 @@ def Analysis(river_name :str, variable :str, connection):
     # Generate all different combinations of seasonal p, q and q triplets
     seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
 
+    '''
     print('Examples of parameter combinations for Seasonal ARIMA...')
     print('SARIMAX: {} x {}'.format(pdq[1], seasonal_pdq[1]))
     print('SARIMAX: {} x {}'.format(pdq[1], seasonal_pdq[2]))
     print('SARIMAX: {} x {}'.format(pdq[2], seasonal_pdq[3]))
     print('SARIMAX: {} x {}'.format(pdq[2], seasonal_pdq[4]))
+    '''
 
     import warnings
     warnings.filterwarnings("ignore") # specify to ignore warning messages
@@ -162,7 +165,7 @@ def Analysis(river_name :str, variable :str, connection):
     for param in pdq:
         for param_seasonal in seasonal_pdq:
             try:
-                mod = sm.tsa.statespace.SARIMAX(one_step_df.variable_actual,
+                mod = sm.tsa.statespace.SARIMAX(df[variable], #one_step_df.variable_actual
                                                 order=param,
                                                 seasonal_order=param_seasonal,
                                                 enforce_stationarity=False,
@@ -183,28 +186,35 @@ def Analysis(river_name :str, variable :str, connection):
                                     seasonal_order=(1, 1, 1, 12),
                                     enforce_stationarity=False,
                                     enforce_invertibility=False)
+    #print('model created')
 
-    
-    
     # SAVE THE MODEL 
-    filename = '{river_name}-{variable} model'.format(river_name = river_name, variable = variable)
-    pickle.dump(mod, open(filename, 'wb'))
-    
-    connection.close()
-    return one_step_df
+    #path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+    #modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
+    #filename = path + modelname  
+    #pickle.dump(mod, open(filename, 'wb'))
 
+    #connection.close()
+    #return one_step_df
 
+    results = mod.fit()
+    print('model trained')
+    path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+    modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
+    filename = path + modelname  
+    pickle.dump(results, open(filename, 'wb'))
 
-def prediction( modelname:str, variable: str, river_name:str, connection, one_step_df):
+    #results.plot_diagnostics(figsize=(15, 12))
+    #plt.show()    
+    print('model saved')
 
+def prediction(modelname:str, variable: str, river_name:str, connection):
+
+    path = os.environ.get('my_path') 
+    filename = path + modelname
+    results = pickle.load(open(filename, 'rb'))
     query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
     df = pd.read_sql(query, con=connection)
-    loaded_model = pickle.load(open(modelname, 'rb'))
-    results = loaded_model.fit()
-    results.plot_diagnostics(figsize=(15, 12))
-    plt.show()
-
-
     start_pred = len(df)
 
     pred_1h = start_pred +1
@@ -220,13 +230,17 @@ def prediction( modelname:str, variable: str, river_name:str, connection, one_st
         pred = results.get_prediction(start = pred_time , dynamic=False)
         pred_ci = pred.conf_int()
         
-        output_l = str(pred_ci['lower {variable}_actual'.format(variable = variable)]).split()
-        output_u = str(pred_ci['upper {variable}_actual'.format(variable = variable)]).split()
+        #output_l = str(pred_ci['lower {variable}_actual'.format(variable = variable)]).split()
+        #output_u = str(pred_ci['upper {variable}_actual'.format(variable = variable)]).split()
+        output_l = str(pred_ci['lower variable_actual']).split()
+        output_u = str(pred_ci['upper variable_actual']).split()
         output = output_l[1] + ' - ' + output_u[1]
         list_output.append(output)
 
+        '''
         plt.figure(figsize=(16,10), dpi=100)
-        ax = one_step_df.variable_actual[:].plot(label='observed')
+        #ax = one_step_df.variable_actual[:].plot(label='observed')
+        ax = df[variable][:].plot(label='observed')
         pred.predicted_mean.plot(ax=ax, label='Forecast')
 
         ax.fill_between(pred_ci.index,
@@ -243,9 +257,43 @@ def prediction( modelname:str, variable: str, river_name:str, connection, one_st
         
         plt.legend()
         plt.xlim([start_pred -100,pred_1w + 50])
-        print(pred_ci.iloc[:, 0])
-        print(pred_ci.iloc[:, 1])
-        plt.show()   
+        #print(pred_ci.iloc[:, 0])
+        #print(pred_ci.iloc[:, 1])
+        #plt.show()  
+        ''' 
 
-    connection.close()
-     
+    #connection.close()
+    #print(list_output)
+    if river_name == 'Tabella_Isarco':
+        id = 1
+    elif river_name == 'Tabella_Adige':
+        id = 2
+    else:
+        id = 3
+    data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':(float(list_output[0].split(' - ')[0]) + float(list_output[0].split(' - ')[1]) )/2, '3h':(float(list_output[1].split(' - ')[0]) + float(list_output[1].split(' - ')[1]) )/2, '12h':(float(list_output[2].split(' - ')[0]) + float(list_output[2].split(' - ')[1]) )/2, '1d':(float(list_output[3].split(' - ')[0]) + float(list_output[3].split(' - ')[1]) )/2, '3d':(float(list_output[4].split(' - ')[0]) + float(list_output[4].split(' - ')[1]) )/2, '1w':(float(list_output[5].split(' - ')[0]) + float(list_output[5].split(' - ')[1]) )/2, 'Id':id}
+    dataframe = pd.DataFrame(data, index=[0])
+    csvname = path+'predictions_folder/predictions_{model}.csv'.format(model=modelname)
+    dataframe.to_csv(csvname,index=False)
+
+def make_predictions():
+
+    connection = mysql.connector.connect(
+        host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
+        port =  3310,
+        database = 'database_fiumi',  #'rivers_db'
+        user = os.environ.get('user'), #root, user_new
+        password = os.environ.get('password'), #password, passwordnew_user
+        allow_local_infile = True
+        )
+    connection.autocommit = True
+
+    prediction('Tabella_Isarco-Q_mean_model', 'Q_mean', 'Tabella_Isarco', connection)
+    prediction('Tabella_Isarco-W_mean_model', 'W_mean', 'Tabella_Isarco', connection)
+    prediction('Tabella_Isarco-WT_mean_model', 'WT_mean', 'Tabella_Isarco', connection)
+    prediction('Tabella_Adige-Q_mean_model', 'Q_mean', 'Tabella_Adige', connection)
+    prediction('Tabella_Adige-W_mean_model', 'W_mean', 'Tabella_Adige', connection)
+    prediction('Tabella_Adige-WT_mean_model', 'WT_mean', 'Tabella_Adige', connection)
+    prediction('Tabella_Talvera-Q_mean_model', 'Q_mean', 'Tabella_Talvera', connection)
+    prediction('Tabella_Talvera-W_mean_model', 'W_mean', 'Tabella_Talvera', connection)
+    prediction('Tabella_Talvera-WT_mean_model', 'WT_mean', 'Tabella_Talvera', connection)
+    publisher_str('Previsioni completate, salvale!')

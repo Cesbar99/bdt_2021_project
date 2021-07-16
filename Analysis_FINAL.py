@@ -209,11 +209,11 @@ def Analysis(river_name :str, variable :str):
 
     results = mod.fit()
     print('model trained')
-    path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+    path = 'E:/' #os.environ.get('path_model') # 'E:/'     #os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
     modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
-    filename = path + modelname  
-    #pickle.dump(results, open(filename, 'wb'))
-    joblib.dump(results, filename, compress=('zlib', 6))
+    filename = path +  modelname  
+    pickle.dump(results, open(filename, 'wb'))
+    #joblib.dump(results, filename, compress=('zlib', 6))
 
     #results.plot_diagnostics(figsize=(15, 12))
     #plt.show()    
@@ -233,10 +233,10 @@ def prediction(modelname:str, variable: str, river_name:str):
         )
     connection.autocommit = True
 
-    path = os.environ.get('my_path') 
-    filename = path + modelname
-    #results = pickle.load(open(filename, 'rb'))
-    results = joblib.load(filename)
+    path = 'E:/' #os.environ.get('path_model')  #'E:/'  #os.environ.get('my_path') 
+    filename = path  + modelname
+    results = pickle.load(open(filename, 'rb'))
+    #results = joblib.load(filename)
     query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
     df = pd.read_sql(query, con=connection)
     start_pred = len(df)
@@ -296,7 +296,7 @@ def prediction(modelname:str, variable: str, river_name:str):
         id = 3
     data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':(float(list_output[0].split(' - ')[0]) + float(list_output[0].split(' - ')[1]) )/2, '3h':(float(list_output[1].split(' - ')[0]) + float(list_output[1].split(' - ')[1]) )/2, '12h':(float(list_output[2].split(' - ')[0]) + float(list_output[2].split(' - ')[1]) )/2, '1d':(float(list_output[3].split(' - ')[0]) + float(list_output[3].split(' - ')[1]) )/2, '3d':(float(list_output[4].split(' - ')[0]) + float(list_output[4].split(' - ')[1]) )/2, '1w':(float(list_output[5].split(' - ')[0]) + float(list_output[5].split(' - ')[1]) )/2, 'Id':id}
     dataframe = pd.DataFrame(data, index=[0])
-    csvname = path+'predictions_folder/predictions_{model}.csv'.format(model=modelname)
+    csvname = path+'/predictions_{model}.csv'.format(model=modelname)
     dataframe.to_csv(csvname,index=False)
 
     connection.close()

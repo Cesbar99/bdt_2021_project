@@ -14,6 +14,7 @@ import sqlite3
 import textwrap
 import math
 import pandas as pd
+import sys
 
 class Name:
     def __init__(self, scode:str):
@@ -240,21 +241,21 @@ class manager_dati_nuovi:
             json.dump(self.insert2, target3, default=str, ensure_ascii=False)
 
     def from_json_to_csv(self):
-        df = pd.read_json('created_json_talvera.json')
+        df = pd.read_json('created_json_talvera.json',  encoding= 'latin1')
         print(df)
         del df['NAME']
         df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
         export_csv = df.to_csv('test_folder/created_csv_talvera.csv', index = None, header=True)
         os.remove('created_json_talvera.json')
-
-        df = pd.read_json('created_json_isarco.json')
+        encoding = sys.getdefaultencoding()
+        df = pd.read_json('created_json_isarco.json', encoding= 'latin1')
         print(df)
         del df['NAME']
         df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]
         export_csv = df.to_csv('test_folder/created_csv_isarco.csv', index = None, header=True)
         os.remove('created_json_isarco.json')
 
-        df = pd.read_json('created_json_adige.json')
+        df = pd.read_json('created_json_adige.json',  encoding= 'latin1')
         print(df)
         del df['NAME']
         df = df[['TimeStamp','Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID']]

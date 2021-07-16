@@ -30,7 +30,7 @@ from streamlit_folium import folium_static
 import folium
 import json
 from bokeh.plotting import figure
-from Analysis_FINAL import * 
+#from Analysis_FINAL import * 
 import pymysql
 
 connection = mysql.connector.connect(
@@ -138,7 +138,7 @@ if st.checkbox('Show dataframe'):
     chart_data
 
 st.write('Let\'s take a look to the data')
-st.line_chart(query_db(data_set_name,variable_name_key)[diz_measures[variable_name_key]])
+st.line_chart(df[diz_measures[variable_name_key]])
 
 # CHECKBOX FOR PREDICTION 
 
@@ -147,7 +147,7 @@ st.line_chart(query_db(data_set_name,variable_name_key)[diz_measures[variable_na
 
 time = st.slider('Decide how far to move in the future (hrs) ', 1 , 168)
 
-diz_times = {1: 'two hour',
+diz_times = {1: 'one hour',
             2: 'two hours',
             3: 'three hours',
             4 : 'four hours',
@@ -316,5 +316,47 @@ diz_times = {1: 'two hour',
             167: 'six days & tenty three hours', 
             168: 'one week '}
 
+def analysis(data_set_name,variable_name_key, time):
+    path = 'E:/' # We saved the models into a USB pen 
+    model_name = 'Tabella_' + data_set_name + '-' + diz_measures[variable_name_key] + '_model'
+    filename = path  + model_name
+    results = pickle.load(open(filename, 'rb'))
+    start_pred = len(df)
+    pred_time = start_pred + time 
+    pred = results.get_prediction(start = pred_time , dynamic=False)
+    pred_ci = pred.conf_int()
+    
+    output_l = str(pred_ci['lower variable_actual']).split()
+    output_u = str(pred_ci['upper variable_actual']).split()
+    output = output_l[1] + ' - ' + output_u[1]
+    plt.figure(figsize=(16,10), dpi=100)
+    ax = df.W_mean[:].plot(label='observed')
+    pred.predicted_mean.plot(ax=ax, label='Forecast')
+    ax.fill_between(pred_ci.index,
+                    pred_ci.iloc[:, 0],
+                    pred_ci.iloc[:, 1], color='grey', alpha=1, label = 'confidence interval')
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Temperature (in Celsius)')
+    plt.legend()
+    plt.xlim([start_pred -150,start_pred + 200])
+    plt.title('Prediction of{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = diz_times[time], result = output))
+    st.set_option('deprecation.showPyplotGlobalUse', False)
+    st.pyplot()
+    return output
 
-#st.write('The {variable} in {time_correct} will be {result}'.format(variable = variable_name_key, time_correct = diz_times[time], result = prediction_interval(time, variable_name_key)  ))
+prediction_interval = analysis(data_set_name,variable_name_key, time)
+#st.write(prediction_interval)
+
+st.write('{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = diz_times[time], result = prediction_interval))
+
+
+
+    #ax = one_step_df.W_mean_actual[:].plot(label='observed')
+    
+
+    
+
+    
+
+
+    

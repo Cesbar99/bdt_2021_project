@@ -31,7 +31,7 @@ import folium
 import json
 from bokeh.plotting import figure
 from Analysis_FINAL import * 
-
+import pymysql
 
 connection = mysql.connector.connect(
         host=  os.environ.get('host'), 
@@ -43,11 +43,12 @@ connection = mysql.connector.connect(
 connection.autocommit = True
 cursor = connection.cursor()
 
-connection.close()
+
+
 
 
 st.title('Analysis of Rivers in the Bolzano\'s Area')
-"""
+
 audio_file = open('river.ogg', 'rb')
 audio_bytes = audio_file.read()
 st.audio(audio_bytes, format='audio/ogg')
@@ -125,6 +126,7 @@ def query_db(data_set_name,variable_name_key):
 
     df.set_index('Timestamp')
     
+    connection.close()
     return df
 
 
@@ -418,4 +420,4 @@ ax.set_ylabel('Temperature (in Celsius)')
 plt.legend()
 plt.xlim([start_pred -100,pred_1w + 50])'''
 
-# connection.close()"""
+# connection.close()

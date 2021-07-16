@@ -104,10 +104,12 @@ data_set_name =  add_selectbox = st.sidebar.selectbox(
 
 variable_name_key =  add_selectbox = st.sidebar.selectbox(
     "which measure do you want to know about ?",
-    ("Water Level", "Water Temperature", "Flow_Rate")
+    ("Water Level", "Water Temperature", "Water Flow")
 )
 
-diz_measures = {'Water Level' : 'W_mean', 'Water Temperature': 'WT_mean', 'Flow_Rate' : 'Q_mean'}
+diz_measures = {'Water Level' : 'W_mean', 'Water Temperature': 'WT_mean', 'Water Flow' : 'Q_mean'}
+diz_unit = {'Water Level' : 'Water Level (cm)', 'Water Temperature': 'Water Temperature (°C)', 'Water Flow' : 'Water Flow (m³/s)'}
+
 
 def query_db(data_set_name,variable_name_key):
     query = 'SELECT Timestamp, {variable} from Tabella_{name}'.format(variable = diz_measures[variable_name_key] , name = data_set_name)
@@ -330,13 +332,13 @@ def analysis(data_set_name,variable_name_key, time):
     output_u = str(pred_ci['upper variable_actual']).split()
     output = output_l[1] + ' - ' + output_u[1]
     plt.figure(figsize=(16,10), dpi=100)
-    ax = df.W_mean[:].plot(label='observed')
+    ax = df[diz_measures[variable_name_key]][:].plot(label='observed')
     pred.predicted_mean.plot(ax=ax, label='Forecast')
     ax.fill_between(pred_ci.index,
                     pred_ci.iloc[:, 0],
                     pred_ci.iloc[:, 1], color='grey', alpha=1, label = 'confidence interval')
     ax.set_xlabel('Date')
-    ax.set_ylabel('Temperature (in Celsius)')
+    ax.set_ylabel(diz_unit[variable_name_key])
     plt.legend()
     plt.xlim([start_pred -150,start_pred + 200])
     plt.title('Prediction of{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = diz_times[time], result = output))
@@ -351,7 +353,7 @@ st.write('{river_name}\'s {variable} in {time_correct}  will be in between {resu
 
 
 
-    #ax = one_step_df.W_mean_actual[:].plot(label='observed')
+
     
 
     

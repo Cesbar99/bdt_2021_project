@@ -11,12 +11,15 @@ from dati_fiumi import Rivers, MYSQLRivers
 def on_message(client, userdata, message):
 
     if message.payload.decode() == '3 file creati! è ora di salvarli':
+        print(message.payload.decode())
         manager.save(debug=False, new_observation=True) #debug = True
     elif message.payload.decode() == 'Dati storici in arrivo! è ora di salvarli':
+        print(message.payload.decode())
         manager.save(debug=False)
     elif message.payload.decode() == 'Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?':
         make_predictions()
     elif message.payload.decode() == 'Previsioni completate, salvale!':
+        print(message.payload.decode())
         manager.save(debug=False, prediction=True) #debug = True
     
 ########################################

@@ -1,4 +1,0 @@
-
-PS C:\Users\alber\Desktop\UniTn\Data Science\Second_Semester\Big_data\Project> docker-compose up -d -> to detach 
-
-PS C:\Users\alber\Desktop\UniTn\Data Science\Second_Semester\Big_data\Project> docker-compose up down -> to kill 

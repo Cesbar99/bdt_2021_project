@@ -19,6 +19,7 @@ from mysql.connector import connection
 import seaborn as sns 
 import pickle
 from mqtt_fiumi_publisher import publisher_str
+import joblib
 
 
 
@@ -212,7 +213,8 @@ def Analysis(river_name :str, variable :str):
     path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
     modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
     filename = path + modelname  
-    pickle.dump(results, open(filename, 'wb'))
+    #pickle.dump(results, open(filename, 'wb'))
+    joblib.dump(results, filename, compress=('zlib', 6))
 
     #results.plot_diagnostics(figsize=(15, 12))
     #plt.show()    
@@ -234,7 +236,8 @@ def prediction(modelname:str, variable: str, river_name:str):
 
     path = os.environ.get('my_path') 
     filename = path + modelname
-    results = pickle.load(open(filename, 'rb'))
+    #results = pickle.load(open(filename, 'rb'))
+    results = joblib.load(filename)
     query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
     df = pd.read_sql(query, con=connection)
     start_pred = len(df)

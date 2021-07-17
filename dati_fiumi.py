@@ -283,7 +283,7 @@ class MYSQLRivers:
         cursor.execute(query)
         cursor.close()
     
-    def save(self, debug=None, prediction=None) -> None: #new_observation=None) -> None:
+    def save(self, debug=None, prediction=None) -> None: 
 
         if not prediction:
             path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'

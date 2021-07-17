@@ -8,11 +8,8 @@ from dati_fiumi import Rivers, MYSQLRivers
 
 def on_message_callback(client, userdata, message:mqtt.MQTTMessage):
 
-    print(message.payload.decode())
-
     if message.payload.decode() == '3 file creati! è ora di salvarli':
         print(message.payload.decode())
-        x = 1
         manager.save(debug=False)#new_observation=True) #debug = True
     elif message.payload.decode() == 'Dati storici in arrivo! è ora di salvarli':
         print(message.payload.decode())
@@ -21,7 +18,6 @@ def on_message_callback(client, userdata, message:mqtt.MQTTMessage):
         #print(message.payload.decode())
         #manager.make_predictions()
     elif message.payload.decode() == 'Previsioni completate, salvale!':
-        x = 0
         print(message.payload.decode())
         manager.save(prediction=True) #debug = True
     

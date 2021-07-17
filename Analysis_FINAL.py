@@ -209,7 +209,8 @@ def Analysis(river_name :str, variable :str):
 
     results = mod.fit()
     print('model trained')
-    path = 'E:/' #os.environ.get('path_model') # 'E:/'     #os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+    path = 'E:/' #os.environ.get('path_model') # 'E:/'     
+    #os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
     modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
     filename = path +  modelname  
     pickle.dump(results, open(filename, 'wb'))
@@ -221,24 +222,17 @@ def Analysis(river_name :str, variable :str):
 
     connection.close()
 
-def prediction(modelname:str, variable: str, river_name:str):
+def prediction(modelname:str, variable: str, river_name:str, dataframe):
 
-    connection = mysql.connector.connect(
-        host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
-        port =  3310,
-        database = 'database_fiumi',  #'rivers_db'
-        user = os.environ.get('user'), #root, user_new
-        password = os.environ.get('password'), #password, passwordnew_user
-        allow_local_infile = True
-        )
-    connection.autocommit = True
-
-    path = 'E:/' #os.environ.get('path_model')  #'E:/'  #os.environ.get('my_path') 
+    #path = 'E:/' 
+    #path = os.environ.get('path_model')  
+    path = os.environ.get('my_path')  
     filename = path  + modelname
-    results = pickle.load(open(filename, 'rb'))
-    #results = joblib.load(filename)
-    query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
-    df = pd.read_sql(query, con=connection)
+    #results = pickle.load(open(filename, 'rb'))
+    results = joblib.load(filename)
+    #query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
+    #df = pd.read_sql(query, con=connection)
+    df = dataframe
     start_pred = len(df)
 
     pred_1h = start_pred +1
@@ -297,22 +291,12 @@ def prediction(modelname:str, variable: str, river_name:str):
         id = 2
     else:
         id = 3
+    name = river_name+'-'+variable
     data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':(float(list_output[0].split(' - ')[0]) + float(list_output[0].split(' - ')[1]) )/2, '3h':(float(list_output[1].split(' - ')[0]) + float(list_output[1].split(' - ')[1]) )/2, '12h':(float(list_output[2].split(' - ')[0]) + float(list_output[2].split(' - ')[1]) )/2, '1d':(float(list_output[3].split(' - ')[0]) + float(list_output[3].split(' - ')[1]) )/2, '3d':(float(list_output[4].split(' - ')[0]) + float(list_output[4].split(' - ')[1]) )/2, '1w':(float(list_output[5].split(' - ')[0]) + float(list_output[5].split(' - ')[1]) )/2, 'Id':id}
+    #data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':list_output[0], '3h':list_output[1], '12h':list_output[2], '1d':list_output[3], '3d':list_output[4], '1w':list_output[5], 'Id':id}
     dataframe = pd.DataFrame(data, index=[0])
-    csvname = path+'/predictions_folder/{model}.csv'.format(model=river_name+'-'+variable+'_prediction')
+    csvname = path+'/predictions_folder/{pred}.csv'.format(pred=name+'_prediction')
     dataframe.to_csv(csvname,index=False)
 
-    connection.close()
+    #connection.close()
 
-def make_predictions():
-
-    prediction('Tabella_Isarco-Q_mean_model', 'Q_mean', 'Tabella_Isarco')
-    prediction('Tabella_Isarco-W_mean_model', 'W_mean', 'Tabella_Isarco')
-    prediction('Tabella_Isarco-WT_mean_model', 'WT_mean', 'Tabella_Isarco')
-    prediction('Tabella_Adige-Q_mean_model', 'Q_mean', 'Tabella_Adige')
-    prediction('Tabella_Adige-W_mean_model', 'W_mean', 'Tabella_Adige')
-    prediction('Tabella_Adige-WT_mean_model', 'WT_mean', 'Tabella_Adige')
-    prediction('Tabella_Talvera-Q_mean_model', 'Q_mean', 'Tabella_Talvera')
-    prediction('Tabella_Talvera-W_mean_model', 'W_mean', 'Tabella_Talvera')
-    prediction('Tabella_Talvera-WT_mean_model', 'WT_mean', 'Tabella_Talvera')
-    publisher_str('Previsioni completate, salvale!')

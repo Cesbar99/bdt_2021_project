@@ -1,31 +1,36 @@
 import os
-import paho.mqtt.client as mqtt #import the client1
+from paho.mqtt import client as mqtt
 import time
 from datetime import datetime
-from Analysis_FINAL import make_predictions
-
 from dati_fiumi import Rivers, MYSQLRivers
 
 ########################################
 
-def on_message(client, userdata, message):
+def on_message_callback(client, userdata, message:mqtt.MQTTMessage):
+
+    print(message.payload.decode())
 
     if message.payload.decode() == '3 file creati! è ora di salvarli':
-        manager.save(debug=False, new_observation=True) #debug = True
+        print(message.payload.decode())
+        x = 1
+        manager.save(debug=False)#new_observation=True) #debug = True
     elif message.payload.decode() == 'Dati storici in arrivo! è ora di salvarli':
+        print(message.payload.decode())
         manager.save(debug=False)
-    elif message.payload.decode() == 'Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?':
-        make_predictions()
+    #elif message.payload.decode() == 'Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?':
+        #print(message.payload.decode())
+        #manager.make_predictions()
     elif message.payload.decode() == 'Previsioni completate, salvale!':
+        x = 0
+        print(message.payload.decode())
         manager.save(prediction=True) #debug = True
     
 ########################################
     
-lista_ricevuti = []
 manager = MYSQLRivers()
-broker_address= "broker.emqx.io" 
+broker_address= "broker.emqx.io"   
 client = mqtt.Client('fiumi-storer') 
-client.connect(broker_address, 1883, 60) 
+client.connect(broker_address, port = 1883, keepalive = 60) 
 client.subscribe(os.environ.get('topic')) 
-client.on_message = on_message 
+client.on_message = on_message_callback
 client.loop_forever()

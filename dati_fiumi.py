@@ -15,6 +15,7 @@ import textwrap
 import math
 import pandas as pd
 import sys
+from Analysis_FINAL import prediction
 
 class Name:
     def __init__(self, scode:str):
@@ -265,6 +266,8 @@ class manager_dati_nuovi:
 class MYSQLRivers:
     
     def __init__(self)-> None:
+        
+        self.trigger = 0
         self.connection = mysql.connector.connect(
         host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
         port =  3310,
@@ -280,7 +283,7 @@ class MYSQLRivers:
         cursor.execute(query)
         cursor.close()
     
-    def save(self, debug=None, prediction=None, new_observation=None) -> None:
+    def save(self, debug=None, prediction=None) -> None: #new_observation=None) -> None:
 
         if not prediction:
             path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
@@ -293,21 +296,16 @@ class MYSQLRivers:
             #debug: tabelle = ['Try_Isarco', 'Try_Adige', 'Try_Talvera']
             #no-debug: tabelle = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
 
-            if debug: 
-                for file in files:
+            
+            for file in files:
                     
-                    to_add = file[12:]
-                    to_add = to_add[:-4]
-                    to_add =  to_add[0].upper() + to_add[1:] 
-                    
+                to_add = file[12:]
+                to_add = to_add[:-4]
+                to_add =  to_add[0].upper() + to_add[1:] 
+
+                if debug:   
                     tabelle.append('Try_' + to_add)
-            else:
-                for file in files:
-                    
-                    to_add = file[12:]
-                    to_add = to_add[:-4]
-                    to_add =  to_add[0].upper() + to_add[1:] 
-                    
+                else:                   
                     tabelle.append('Tabella_' + to_add)
 
             cursor = self.connection.cursor()
@@ -329,10 +327,6 @@ class MYSQLRivers:
                 print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
             
             cursor.close()
-
-            if new_observation:
-
-                publisher_str('Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?')
             
             print('Terminato con successo!')
             print('')
@@ -364,6 +358,10 @@ class MYSQLRivers:
             print('Terminato con successo!')
             print('')
 
+        #if new_observation:
+
+            #publisher_str('Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?')
+            #sself.make_predictions()
 
     def query_table(nome_tabella:str) -> str:
         create_table_query = '''
@@ -449,7 +447,7 @@ class MYSQLRivers:
                         CREATE TABLE {nome_tabella}
                         (
                         Timestamp DATETIME NOT NULL,
-                        {var}_1h FLOAT (20,2) ,
+                        {var}_1h FLOAT (20,2) , 
                         {var}_3h FLOAT (20,2) ,
                         {var}_12h  FLOAT (20,2) ,
                         {var}_1d  FLOAT (20,2) ,
@@ -459,8 +457,23 @@ class MYSQLRivers:
                         )
                         '''.format(nome_tabella = table_name, var = table_name[-6:])
 
+                    """
+                    create_table_query = '''
+                        CREATE TABLE {nome_tabella}
+                        (
+                        Timestamp DATETIME NOT NULL,
+                        {var}_1h NVARCHAR(128) NOT NULL , 
+                        {var}_3h NVARCHAR(128) NOT NULL ,
+                        {var}_12h  NVARCHAR(128) NOT NULL ,
+                        {var}_1d  NVARCHAR(128) NOT NULL ,
+                        {var}_3d  NVARCHAR(128) NOT NULL,
+                        {var}_1w  NVARCHAR(128) NOT NULL ,
+                        Id INT
+                        )
+                        '''.format(nome_tabella = table_name, var = table_name[-6:])
+
                     cursor.execute(create_table_query)
-            
+                    """
            
             cursor.close()
                 
@@ -471,6 +484,28 @@ class MYSQLRivers:
         
         self.connection.close()
 
+    def make_predictions(self):
+
+        cursor = self.connection.cursor()
+
+        #modelli = ['Tabella_Isarco-Q_mean_model', 'Tabella_Isarco-W_mean_model', 'Tabella_Isarco-WT_mean_model', 'Tabella_Adige-Q_mean_model', 'Tabella_Adige-W_mean_model', 'Tabella_Adige-WT_mean_model', 'Tabella_Talvera-Q_mean_model', 'Tabella_Talvera-W_mean_model','Tabella_Talvera-WT_mean_model']
+        tabelle = ['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
+        variabili = ['Q_mean', 'W_mean', 'WT_mean']
+
+        print('starting predictions')
+
+        for i in range(len(tabelle)):
+            for j in range(len(variabili)):
+                
+                query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = tabelle[i])
+                df = pd.read_sql(query, con= self.connection) 
+
+                prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
+                print('prediction completed for {element}'.format(element=tabelle[i]+'-'+variabili[j]))
+
+        cursor.close()
+
+        publisher_str('Previsioni completate, salvale!')
         
     
         

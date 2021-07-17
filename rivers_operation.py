@@ -1,6 +1,8 @@
 import time
 from dati_fiumi import MYSQLRivers, manager_dati_nuovi
 from mqtt_fiumi_publisher import publisher_str
+import paho.mqtt.client as mqtt
+
 
 
 manager_mysql = MYSQLRivers()
@@ -13,8 +15,9 @@ while True:
     manager.manage_new_rivers(url)
     manager.transfer_json()
     manager.from_json_to_csv()
-    publisher_str('3 file creati! è ora di salvarli')
+    message = publisher_str('3 file creati! è ora di salvarli')
     print('finito')
+    #message.info()
     time.sleep(3600) #3600
 
 

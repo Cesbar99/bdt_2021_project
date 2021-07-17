@@ -19,7 +19,7 @@ def on_message(client, userdata, message):
     elif message.payload.decode() == 'Previsioni completate, salvale!':
         print(message.payload.decode())
         manager.save(debug=False, prediction=True) #debug = True
-   
+    
 ########################################
     
 lista_ricevuti = []

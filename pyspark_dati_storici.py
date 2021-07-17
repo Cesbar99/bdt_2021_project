@@ -152,6 +152,6 @@ for i in range(len(ids)):
 
 
 
-publisher_str('3 file creati! è ora di salvarli')
+publisher_str('Dati storici in arrivo! è ora di salvarli')
 
 sc.stop()

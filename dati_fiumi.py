@@ -280,7 +280,7 @@ class MYSQLRivers:
         cursor.execute(query)
         cursor.close()
     
-    def save(self, debug = None, prediction=None) -> None:
+    def save(self, debug=None, prediction=None, new_observation=None) -> None:
 
         if not prediction:
             path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
@@ -330,7 +330,9 @@ class MYSQLRivers:
             
             cursor.close()
 
-            publisher_str('Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?')
+            if new_observation:
+
+                publisher_str('Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?')
             
             print('Terminato con successo!')
             print('')

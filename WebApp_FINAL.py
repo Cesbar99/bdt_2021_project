@@ -32,6 +32,7 @@ import json
 from bokeh.plotting import figure
 #from Analysis_FINAL import * 
 import pymysql
+import joblib
 
 connection = mysql.connector.connect(
         host=  os.environ.get('host'), 
@@ -341,7 +342,7 @@ def analysis(data_set_name,variable_name_key, time):
     ax.set_ylabel(diz_unit[variable_name_key])
     plt.legend()
     plt.xlim([start_pred -150,start_pred + 200])
-    plt.title('Prediction of{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = diz_times[time], result = output))
+    plt.title('Prediction of {river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = diz_times[time], result = output))
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
     return output

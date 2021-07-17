@@ -299,7 +299,7 @@ def prediction(modelname:str, variable: str, river_name:str):
         id = 3
     data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':(float(list_output[0].split(' - ')[0]) + float(list_output[0].split(' - ')[1]) )/2, '3h':(float(list_output[1].split(' - ')[0]) + float(list_output[1].split(' - ')[1]) )/2, '12h':(float(list_output[2].split(' - ')[0]) + float(list_output[2].split(' - ')[1]) )/2, '1d':(float(list_output[3].split(' - ')[0]) + float(list_output[3].split(' - ')[1]) )/2, '3d':(float(list_output[4].split(' - ')[0]) + float(list_output[4].split(' - ')[1]) )/2, '1w':(float(list_output[5].split(' - ')[0]) + float(list_output[5].split(' - ')[1]) )/2, 'Id':id}
     dataframe = pd.DataFrame(data, index=[0])
-    csvname = path+'/predictions_folder/{model}.csv'.format(model=modelname)
+    csvname = path+'/predictions_folder/{model}.csv'.format(model=river_name+'-'+variable+'_prediction')
     dataframe.to_csv(csvname,index=False)
 
     connection.close()

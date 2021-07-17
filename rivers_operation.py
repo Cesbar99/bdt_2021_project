@@ -15,7 +15,7 @@ while True:
     manager.from_json_to_csv()
     publisher_str('3 file creati! è ora di salvarli')
     print('finito')
-    time.sleep(3600) #5
+    time.sleep(3600) #3600
 
 
 

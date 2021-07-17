@@ -288,6 +288,9 @@ def prediction(modelname:str, variable: str, river_name:str):
 
     #connection.close()
     #print(list_output)
+
+    path = os.environ.get('my_path')
+    
     if river_name == 'Tabella_Isarco':
         id = 1
     elif river_name == 'Tabella_Adige':

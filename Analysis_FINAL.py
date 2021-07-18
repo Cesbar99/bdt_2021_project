@@ -52,84 +52,10 @@ def Analysis(river_name :str, variable :str):
 
     df = df.reset_index()
 
-    #df.describe()
-
-    #Create a df for the year 2019
-    y_19 = df.iloc[:7108]  ### ??? check 
-
-    #Create a df for the year 2020
-    y_20 = df.iloc[7108:16147]
-
-    #Create a df for the year 2021
-    y_21 = df.iloc[16147:]
-
-    #tks = np.arange(min(df['Timestamp']), max(df['Timestamp']), 30)
-    min_time = (min(df['Timestamp']))   
-    max_time = (max(df['Timestamp']))
-    ticks = []
-    #tks = np.arange(min_time, max_time)
-    start_time = df['Timestamp'].iloc[0]
-    start_time = str(start_time)
-    start_time = start_time.split()
-    start_time = start_time[0]
-    #print(start_time)
-    x_data = pd.date_range(start_time, periods=30, freq='MS') 
-    # Check how this dates looks like:
-    #print(x_data)
-    for i in range(len(df)):
-        ticks.append(i)
-        
-    len(ticks)
-
-
-    plt.figure(figsize=(16,10), dpi=100)
-    plt.plot(y_21['Timestamp'], y_21[variable], label = '2021')
-    plt.plot(y_20['Timestamp'], y_20[variable], color = 'green', label= '2020')
-    plt.plot(y_19['Timestamp'],y_19[variable], color = 'red', label = '2019' )
-    plt.xlabel('Date')
-    name_river = river_name.split('_')
-    name_river = name_river[1]
-    if variable == 'W_mean':
-        plt.ylabel('Water Level')
-        plt.title('Water level {name}'.format(name = name_river))    
-    elif variable == 'Q_mean':
-        plt.ylabel('Flow rate')
-        plt.title('Flow rate {name}'.format(name = name_river))
-    else:
-        plt.ylabel('Water Temperature')
-        plt.title('Water Temperature {name}'.format(name = name_river))
-
-    plt.legend()
-    plt.xticks()
-    # MODIFICARE I TICKS 
-    #plt.show()
-
-    # Output the maximum and minimum temperature date
-    #print(df.loc[df[variable] == df[variable].max()])
-    #print(df.loc[df[variable] == df[variable].min()])
-
-    # Plot the daily temperature change 
-    plt.figure(figsize=(16,10), dpi=100)
-    plt.plot(df['Timestamp'], df[variable], color='tab:red')
-    # MODIFICARE I TICKS 
-    if variable == 'W_mean':
-        plt.gca().set(title="Water level {name}".format(name = name_river) , xlabel='Date', ylabel="Water Level")    
-    elif variable == 'Q_mean':
-        plt.gca().set(title="Flow Rate {name}".format(name = name_river) , xlabel='Date', ylabel="Flow Rate")
-    else:
-        plt.gca().set(title="Water Temperature {name}".format(name = name_river) , xlabel='Date', ylabel="Water Temperature")
-    
-    #plt.show()
-
     from statsmodels.tsa.seasonal import seasonal_decompose
 
     # Additive Decomposition
     result_add = seasonal_decompose(df[variable], model='additive', extrapolate_trend='freq', freq=365)
-
-    # Plot
-    plt.rcParams.update({'figure.figsize': (10,10)})
-    result_add.plot().suptitle('Additive Decomposition', fontsize=22)
-    #plt.show()
 
     # Shift the current temperature to the next day. 
     predicted_df = df[variable].to_frame().shift(1).rename(columns = {variable: "variable_pred" })
@@ -140,8 +66,6 @@ def Analysis(river_name :str, variable :str):
 
     # Select from the second row, because there is no prediction for today due to shifting.
     one_step_df = one_step_df[1:]
-    #one_step_df.head(10)
-
 
     from sklearn.metrics import mean_squared_error as MSE
     from math import sqrt
@@ -161,14 +85,6 @@ def Analysis(river_name :str, variable :str):
 
     # Generate all different combinations of seasonal p, q and q triplets
     seasonal_pdq = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
-
-    '''
-    print('Examples of parameter combinations for Seasonal ARIMA...')
-    print('SARIMAX: {} x {}'.format(pdq[1], seasonal_pdq[1]))
-    print('SARIMAX: {} x {}'.format(pdq[1], seasonal_pdq[2]))
-    print('SARIMAX: {} x {}'.format(pdq[2], seasonal_pdq[3]))
-    print('SARIMAX: {} x {}'.format(pdq[2], seasonal_pdq[4]))
-    '''
 
     import warnings
     warnings.filterwarnings("ignore") # specify to ignore warning messages
@@ -197,47 +113,24 @@ def Analysis(river_name :str, variable :str):
                                     seasonal_order=(1, 1, 1, 12),
                                     enforce_stationarity=False,
                                     enforce_invertibility=False)
-    #print('model created')
-
-    # SAVE THE MODEL 
-    #path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
-    #modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
-    #filename = path + modelname  
-    #pickle.dump(mod, open(filename, 'wb'))
-
-    #connection.close()
-    #return one_step_df
 
     results = mod.fit()
     print('model trained')
-    #path = 'E:/' #os.environ.get('path_model') # 'E:/'     
-    path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+    #path = 'E:/'   
+    path = os.environ.get('my_path') 
     modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
     filename = path +  modelname  
-    #pickle.dump(results, open(filename, 'wb'))
     joblib.dump(results, filename)
-    #results.save(filename)
-    #sc.parallelize(Sequence(results), 1).objectFile(modelname)
-
-    #results.plot_diagnostics(figsize=(15, 12))
-    #plt.show() 
     print('model saved')  
-    #return results
-    
 
     connection.close()
 
 def prediction(modelname:str, variable: str, river_name:str, dataframe):
 
-    #path = 'E:/' 
-    #path = os.environ.get('path_model')  
+    #path = 'E:/'  
     path = os.environ.get('my_path')  
     filename = path  + modelname
-    #results = pickle.load(open(filename, 'rb'))
     results = joblib.load(filename)
-    #results = model
-    #query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
-    #df = pd.read_sql(query, con=connection)
     df = dataframe
     start_pred = len(df)
 
@@ -253,41 +146,10 @@ def prediction(modelname:str, variable: str, river_name:str, dataframe):
     for pred_time in pred_list:
         pred = results.get_prediction(start = pred_time , dynamic=False)
         pred_ci = pred.conf_int()
-        
-        #output_l = str(pred_ci['lower {variable}_actual'.format(variable = variable)]).split()
-        #output_u = str(pred_ci['upper {variable}_actual'.format(variable = variable)]).split()
         output_l = str(pred_ci['lower variable_actual']).split()
         output_u = str(pred_ci['upper variable_actual']).split()
         output = output_l[1] + ' - ' + output_u[1]
         list_output.append(output)
-
-        '''
-        plt.figure(figsize=(16,10), dpi=100)
-        #ax = one_step_df.variable_actual[:].plot(label='observed')
-        ax = df[variable][:].plot(label='observed')
-        pred.predicted_mean.plot(ax=ax, label='Forecast')
-
-        ax.fill_between(pred_ci.index,
-                        pred_ci.iloc[:, 0],
-                        pred_ci.iloc[:, 1], color='grey', alpha=1, label = 'confidence interval')
-
-        ax.set_xlabel('Date')
-        if variable == 'W_mean':
-            ax.set_ylabel('Height (in Centimeters)')
-        elif variable == 'Q_mean':
-            ax.set_ylabel('Flow Rate m³/s')
-        else:
-            ax.set_ylabel('Temperature (in Celsius)')
-        
-        plt.legend()
-        plt.xlim([start_pred -100,pred_1w + 50])
-        #print(pred_ci.iloc[:, 0])
-        #print(pred_ci.iloc[:, 1])
-        #plt.show()  
-        ''' 
-
-    #connection.close()
-    #print(list_output)
 
     path = os.environ.get('my_path')
     
@@ -304,5 +166,4 @@ def prediction(modelname:str, variable: str, river_name:str, dataframe):
     csvname = path+'/predictions_folder/{pred}.csv'.format(pred=name+'_prediction')
     dataframe.to_csv(csvname,index=False)
 
-    #connection.close()
 

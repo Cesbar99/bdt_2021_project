@@ -14,9 +14,6 @@ def on_message_callback(client, userdata, message:mqtt.MQTTMessage):
     elif message.payload.decode() == 'Dati storici in arrivo! è ora di salvarli':
         print(message.payload.decode())
         manager.save(debug=False)
-    #elif message.payload.decode() == 'Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?':
-        #print(message.payload.decode())
-        #manager.make_predictions()
     elif message.payload.decode() == 'Previsioni completate, salvale!':
         print(message.payload.decode())
         manager.save(prediction=True) #debug = True

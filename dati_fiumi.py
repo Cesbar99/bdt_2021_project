@@ -112,7 +112,7 @@ class raw_rivers:
         return raw_rivers(
             Id if Id else ID.to_repr(ID(raw_data['SCODE'])) ,
             Name.to_repr(Name(raw_data['SCODE'])),
-            Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), #datetime.strptime( Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), '%Y-%m-%d %H:%M:%S' ),
+            Time_Stamp.to_repr(Time_Stamp(raw_data['DATE'])), 
             raw_data['TYPE'],
             raw_data['VALUE'],
             stagione if stagione else Stagione.to_repr(Stagione(raw_data['DATE']))
@@ -173,7 +173,7 @@ class Rivers:
             diz['WT_mean'] = '\\N' #None #math.nan
         
         return Rivers(
-            datetime.strptime(diz['TimeStamp'], '%Y-%m-%d %H:%M:%S' ), #DATETIME OBJECT; if string needed use: diz['TimeStamp']
+            datetime.strptime(diz['TimeStamp'], '%Y-%m-%d %H:%M:%S' ), 
             diz['NAME'],
             diz['Stagione'],
             diz['ID'],
@@ -286,17 +286,13 @@ class MYSQLRivers:
     def save(self, debug=None, prediction=None) -> None: 
 
         if not prediction:
-            path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+            path = os.environ.get('my_path') 
             path = path + 'test_folder/'
             os.chdir(path)
 
             files = list(os.listdir())
             tabelle = []
 
-            #debug: tabelle = ['Try_Isarco', 'Try_Adige', 'Try_Talvera']
-            #no-debug: tabelle = ['Tabella_Isarco', 'Tabella_Adige', 'Tabella_Talvera']
-
-            
             for file in files:
                     
                 to_add = file[12:]
@@ -319,7 +315,7 @@ class MYSQLRivers:
                         ENCLOSED BY '"'
                         LINES TERMINATED BY '\n'
                         IGNORE 1 LINES; 
-                    """.format(path_and_file_name = path + files[i], table_name = tabelle[i]) #path + files[i]
+                    """.format(path_and_file_name = path + files[i], table_name = tabelle[i]) 
                 cursor.execute(query)
                 print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 
@@ -332,10 +328,6 @@ class MYSQLRivers:
             print('')
 
         else:
-
-            #Tabella_Adige-WT_mean_prediction.csv
-            #components = tabelle[i].split()
-            #fiile_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
             
             cursor = self.connection.cursor()
             path = os.environ.get('my_path')
@@ -344,7 +336,7 @@ class MYSQLRivers:
             files = list(os.listdir())
             tabelle = ['pred_Adige_Q_mean', 'pred_Adige_W_mean', 'pred_Adige_WT_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_W_mean', 'pred_Isarco_WT_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_W_mean', 'pred_Talvera_WT_mean']
             for i in range(len(tabelle)):
-                #Tabella_Adige-WT_mean_prediction.csv
+
                 components = tabelle[i].split('_')
                 fiile_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
                 query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
@@ -353,7 +345,7 @@ class MYSQLRivers:
                             ENCLOSED BY '"'
                             LINES TERMINATED BY '\n'
                             IGNORE 1 LINES; 
-                        """.format(path_and_file_name = path + fiile_name, table_name = tabelle[i]) #path + files[i]
+                        """.format(path_and_file_name = path + fiile_name, table_name = tabelle[i]) 
                 cursor.execute(query)
                 print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 
@@ -364,11 +356,6 @@ class MYSQLRivers:
 
             print('Terminato con successo!')
             print('')
-
-        #if new_observation:
-
-            #publisher_str('Nuove osservazioni salvate, cosa ha in serbo il futuro per noi?')
-            #sself.make_predictions()
 
     def query_table(nome_tabella:str) -> str:
         create_table_query = '''
@@ -419,9 +406,8 @@ class MYSQLRivers:
 
     def create(self) -> None:
         
-        cursor = self.connection.cursor()
-        # table_name_fiumi = 'Tabella_fiumi' 
-        nomi_tabelle = MYSQLRivers.check_tables_exist(self) #['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
+        cursor = self.connection.cursor() 
+        nomi_tabelle = MYSQLRivers.check_tables_exist(self) 
         if len(nomi_tabelle) > 0:
             if 'Tabella_nomi' in nomi_tabelle:
                 print('Creating table: Tabella_nomi')
@@ -449,21 +435,6 @@ class MYSQLRivers:
                 if 'Tabella' in table_name or 'Try' in table_name:
                     cursor.execute(MYSQLRivers.query_table(table_name))
                 else:
-                    #tabelle = ['pred_Isarco_Q_mean', 'pred_Isarco_W_mean', 'pred_Isarco_WT_mean', 'pred_Adige_Q_mean', 'pred_Adige_W_mean', 'pred_Adige_WT_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_W_mean', 'pred_Talvera_WT_mean']
-                    """create_table_query = '''
-                        CREATE TABLE {nome_tabella}
-                        (
-                        Timestamp DATETIME NOT NULL,
-                        {var}_1h FLOAT (20,2) , 
-                        {var}_3h FLOAT (20,2) ,
-                        {var}_12h  FLOAT (20,2) ,
-                        {var}_1d  FLOAT (20,2) ,
-                        {var}_3d  FLOAT (20,2) ,
-                        {var}_1w  FLOAT (20,2) ,
-                        Id INT
-                        )
-                        '''.format(nome_tabella = table_name, var = table_name[-6:])"""
-
                     
                     create_table_query = '''
                         CREATE TABLE {nome_tabella}
@@ -495,7 +466,6 @@ class MYSQLRivers:
 
         cursor = self.connection.cursor()
 
-        #modelli = ['Tabella_Adige-Q_mean_model', 'Tabella_Adige-W_mean_model', 'Tabella_Adige-WT_mean_model', 'Tabella_Isarco-Q_mean_model', 'Tabella_Isarco-W_mean_model', 'Tabella_Isarco-WT_mean_model', 'Tabella_Talvera-Q_mean_model', 'Tabella_Talvera-W_mean_model','Tabella_Talvera-WT_mean_model']
         tabelle = ['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
         variabili = ['Q_mean', 'W_mean', 'WT_mean']
 
@@ -507,7 +477,6 @@ class MYSQLRivers:
                 query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = tabelle[i])
                 df = pd.read_sql(query, con= self.connection) 
 
-                #prediction(modello = model, variable = variabili[j], river_name=tabelle[i], dataframe = df)
                 prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
                 print('prediction completed for {element}'.format(element=tabelle[i]+'-'+variabili[j]))
 

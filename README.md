@@ -25,7 +25,7 @@ The first step of our project is to collect the historical data from _Meteo Brow
 Thus, we dowload as a json file the information of the rivers from the 1st January 2019 until today. We save this file as `historic_data.json`. 
 Then, to store this data into our db,  we need to open two different terminals: 
 1) In the first one, we have to launch `mqtt.py` the file where we have specified all the instruction for our pub-sub engine. 
-29 In the second one, we have to launch `pyspark_dati_storici.py` which transform and publish the data as csv that will be stored into a relational db. 
+2) In the second one, we have to launch `pyspark_dati_storici.py` which transform and publish the data as csv that will be stored into a relational db. 
 More precisely, to each river is associated a table e.g. `tabella_talvera`. In addition, we have create a table where are stored the names of the rivers and associated index. 
 This choice has been made in order to avoid to collect unseful and repetitive information as the name of the rivers for each observation. 
 ### Load & Store new data 

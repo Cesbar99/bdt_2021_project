@@ -484,11 +484,11 @@ class MYSQLRivers:
         
         self.connection.close()
 
-    def make_predictions(self):
+    def make_predictions(self, modelli:list):
 
         cursor = self.connection.cursor()
 
-        #modelli = ['Tabella_Isarco-Q_mean_model', 'Tabella_Isarco-W_mean_model', 'Tabella_Isarco-WT_mean_model', 'Tabella_Adige-Q_mean_model', 'Tabella_Adige-W_mean_model', 'Tabella_Adige-WT_mean_model', 'Tabella_Talvera-Q_mean_model', 'Tabella_Talvera-W_mean_model','Tabella_Talvera-WT_mean_model']
+        #modelli = ['Tabella_Adige-Q_mean_model', 'Tabella_Adige-W_mean_model', 'Tabella_Adige-WT_mean_model', 'Tabella_Isarco-Q_mean_model', 'Tabella_Isarco-W_mean_model', 'Tabella_Isarco-WT_mean_model', 'Tabella_Talvera-Q_mean_model', 'Tabella_Talvera-W_mean_model','Tabella_Talvera-WT_mean_model']
         tabelle = ['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
         variabili = ['Q_mean', 'W_mean', 'WT_mean']
 
@@ -500,7 +500,15 @@ class MYSQLRivers:
                 query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = tabelle[i])
                 df = pd.read_sql(query, con= self.connection) 
 
-                prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
+                if tabelle[i] == 'Tabella_Adige':
+                    k = 0
+                elif tabelle[i] == 'Tabella_Isarco':
+                    k = 2
+                elif tabelle[i] == 'Tabella_Talvera':
+                    k = 4
+
+                prediction(modello = modelli[i+j+k], variable = variabili[j], river_name=tabelle[i], dataframe = df)
+                #prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
                 print('prediction completed for {element}'.format(element=tabelle[i]+'-'+variabili[j]))
 
         cursor.close()

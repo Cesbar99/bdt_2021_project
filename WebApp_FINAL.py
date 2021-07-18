@@ -320,9 +320,14 @@ diz_times = {1: 'one hour',
             168: 'one week '}
 
 def analysis(data_set_name,variable_name_key, time):
-    path = 'E:/' # We saved the models into a USB pen 
+    #path = 'E:/' # We saved the models into a USB pen 
+    path = os.environ.get('my_path')
     model_name = 'Tabella_' + data_set_name + '-' + diz_measures[variable_name_key] + '_model'
+    print(model_name)
+    print(data_set_name)
+    print(diz_measures[variable_name_key])
     filename = path  + model_name
+    print(filename)
     results = pickle.load(open(filename, 'rb'))
     start_pred = len(df)
     pred_time = start_pred + time 

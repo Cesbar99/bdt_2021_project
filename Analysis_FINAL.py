@@ -224,12 +224,14 @@ def Analysis(river_name :str, variable :str):
 
 def prediction(modelname:str, variable: str, river_name:str, dataframe):
 
-    #path = 'E:/' 
+    path = 'E:/' 
     #path = os.environ.get('path_model')  
-    path = os.environ.get('my_path')  
+    #path = os.environ.get('my_path')  
     filename = path  + modelname
     #results = pickle.load(open(filename, 'rb'))
+    print('Start_Loading')
     results = joblib.load(filename)
+    print('End loadings')
     #query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
     #df = pd.read_sql(query, con=connection)
     df = dataframe

@@ -11,7 +11,7 @@ The output of this model is a WebApp that shows the rivers in an interactive map
 # 2 
 ## HOW TO RUN THE CODE
 ### Before starting... we need to be connected...
-It is important to recall that instead of installing all the applications needed, the authors decided to create an _EC2_ instance in _AWS_. Then after having activated the instance, we dowloaded docker in this virtual machine. Then thanks to docker, we were able to use an image of MySQL without the need to download it. Thus, to activate the MySQL service we need to:
+It is important to recall that instead of installing all the applications needed, the authors decided to create an _EC2_ instance in _AWS_. Then after having activated the instance, we dowloaded docker in this virtual machine. Then thanks to docker, we were able to use an image of MySQL without the need to download the MySQL application. Thus, to activate the MySQL service we need to:
 A) open _PuTTY_, a free and open-source terminal emulator; 
 B) use the instnace name as the host name for _PuTTY_; 
 C) specify the private key file for autentication, which has been dowloaded from  AWS;
@@ -25,11 +25,11 @@ The first step of our project is to collect the historical data from _Meteo Brow
 Thus, we dowload as a json file the information of the rivers from the 1st January 2019 until today. We save this file as `historic_data.json`. 
 Then, to store this data into our db,  we need to open two different terminals: 
 1) In the first one, we have to launch `mqtt.py` the file where we have specified all the instruction for our pub-sub engine. 
-29 In the second one, we have to launch `pyspark_dati_storici.py` which transform and publish the data as csv that will be stored into a relational db. 
-More precisely, to each river is associated a table e.g. `tabella_talvera`. In addition, we have create a table where are stored the names of the rivers and associated index. 
+2) In the second one, we have to launch `pyspark_dati_storici.py` which transform and publish the data in three csv, one for each river, that will be stored into a relational db. 
+More precisely, to each river is associated a table e.g. `tabella_talvera`. In addition, we have create a table where are stored the names of the rivers and the associated index. 
 This choice has been made in order to avoid to collect unseful and repetitive information as the name of the rivers for each observation. 
 ### Load & Store new data 
-This task can be accomplished in two differnt ways: thanks to `rivers_operation.py` or `pyspark_dati_nuovi.py`. However, this last method is slower because the new data are just three observation hence, it is not possible to take the advantages connected to Spark technology. 
+This task can be accomplished in two differnt ways: thanks to `rivers_operation.py` or `pyspark_dati_nuovi.py`. However, this last method is slower because the new data are just three observation hence, it is not possible to take the advantages of Spark technology. 
 Nevertheless, the processes to load and store the new data does not change and so can be adapt to each situation.
 The procedure is the same for the historic data: 
 1)  we have to launch `mqtt.py` 

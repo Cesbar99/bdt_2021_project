@@ -30,8 +30,6 @@ from streamlit_folium import folium_static
 import folium
 import json
 from bokeh.plotting import figure
-#from Analysis_FINAL import * 
-import pymysql
 import joblib
 
 connection = mysql.connector.connect(

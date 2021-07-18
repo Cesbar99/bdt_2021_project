@@ -139,7 +139,9 @@ if st.checkbox('Show dataframe'):
     chart_data
 
 st.write('Let\'s take a look to the data')
-st.line_chart(df[diz_measures[variable_name_key]])
+df2 = df
+st.line_chart(df2.rename(columns={'Timestamp':'index'}).set_index('index'))
+#st.line_chart(df[diz_measures[variable_name_key]])
 
 # CHECKBOX FOR PREDICTION 
 
@@ -321,7 +323,9 @@ def analysis(data_set_name,variable_name_key, time):
     path = 'E:/' # We saved the models into a USB pen 
     model_name = 'Tabella_' + data_set_name + '-' + diz_measures[variable_name_key] + '_model'
     filename = path  + model_name
-    results = pickle.load(open(filename, 'rb'))
+    st.write('Start_loading')
+    results = joblib.load(open(filename, 'rb'))
+    st.write('End_loading')
     start_pred = len(df)
     pred_time = start_pred + time 
     pred = results.get_prediction(start = pred_time , dynamic=False)
@@ -331,7 +335,8 @@ def analysis(data_set_name,variable_name_key, time):
     output_u = str(pred_ci['upper variable_actual']).split()
     output = output_l[1] + ' - ' + output_u[1]
     plt.figure(figsize=(16,10), dpi=100)
-    ax = df[diz_measures[variable_name_key]][:].plot(label='observed')
+    ax = df[diz_measures[variable_name_key]][:].plot(label= 'observed')
+    
     pred.predicted_mean.plot(ax=ax, label='Forecast')
     ax.fill_between(pred_ci.index,
                     pred_ci.iloc[:, 0],
@@ -341,6 +346,7 @@ def analysis(data_set_name,variable_name_key, time):
     plt.legend()
     plt.xlim([start_pred -150,start_pred + 200])
     plt.title('Prediction of {river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = diz_times[time], result = output))
+    
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
     return output

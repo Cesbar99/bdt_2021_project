@@ -30,13 +30,13 @@ More precisely, to each river is associated a table e.g. `tabella_talvera`. In a
 This choice has been made in order to avoid to collect unseful and repetitive information as the name of the rivers for each observation. 
 ### Load & Store new data 
 This task can be accomplished in two differnt ways: thanks to `rivers_operation.py` or `pyspark_dati_nuovi.py`. However, this last method is slower because the new data are just three observation hence, it is not possible to take the advantages of Spark technology. 
-Nevertheless, the processes to load and store the new data does not change and so can be adapt to each situation.
+Nevertheless, the process to load and store the new data does not change and so can be adapt to each situation.
 The procedure is the same for the historic data: 
 1)  we have to launch `mqtt.py` 
 2)  we have to call  `rivers_operation.py` or `pyspark_dati_nuovi.py`.
 ### Model and predictions 
-When we run `rivers_operation.py` we are also saying to the machine to make predictions on the state of the rivers after 1hour, 3hours, 12hours, one day, three days and one week. 
-These observations are then stored in a new tabel where we collect the `Timestamp` of the last observation, and the prediction for each time horizon. 
+While `rivers_operation.py` is running we launch, from another terminal, `predictions.py` which task is to check whether new observations are available in the data base, if it is the case it  computes predictions for all the chosen time intervals relatively to the latest observations. 
+These predictions are then stored in a new tabel as an interval in string format. In this table, we collect the `Timestamp` of the last observation, and the prediction for each time horizon. 
 The predictions are made thanks to the autoregressive model implemented in `analysis_FINAL.py`. 
 ### Final Output: The WebApp
 Lastly, to visualize the output of the model we have to run the file `WebApp_FINAL.py`. This will create the WebApp but, to visualize it on the browser we need to run the following code in the terminal `streamlit run WebApp_FINAL.py` or to run on the browser the http that have been output after having run the `WebApp_FINAL.py`.

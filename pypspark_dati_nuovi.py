@@ -2,7 +2,6 @@ import findspark
 findspark.init('C:\spark-3.1.2-bin-hadoop3.2')
 findspark.find()
 import pyspark
-#findspark.find()
 
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
@@ -21,7 +20,7 @@ import json
 import requests
 from urllib.request import urlopen
 
-sqlContext.sql("set spark.sql.shuffle.partitions=6"); #use to increase performance on small dataset, feault is 200 partitions
+sqlContext.sql("set spark.sql.shuffle.partitions=6"); 
 
 def from_scode_to_id(scode:str):
     
@@ -63,15 +62,10 @@ jsonData = urlopen(url).read().decode('utf-8')
 rdd = spark.sparkContext.parallelize([jsonData])
 df = spark.read.json(rdd)
 
-#df.show()
-
 df = df.filter( ( (df.SCODE == "29850PG") | (df.SCODE == "83450PG") | (df.SCODE == "82910PG") ) & (df.UNIT != "mg/l") )
-
-#df.show()
 
 udf_add_season = udf(add_season, StringType())
 udf_id = udf(from_scode_to_id, IntegerType())
-#udf_name = udf(from_scode_to_name, StringType())
 
 df = df.withColumn('Stagione', udf_add_season('DATE'))
 df = df.withColumn('ID', udf_id('SCODE'))
@@ -81,35 +75,11 @@ df = df.drop('DESC_L')
 df = df.drop('SCODE')
 df = df.drop('UNIT')
 
-#df.show()
-
 df_1st = df.filter((df.ID == '1'))
 df_2nd = df.filter((df.ID == '2'))
 df_3rd = df.filter((df.ID == '3'))
 
-#df_1st.show()
-#df_2nd.show()
-#df_3rd.show()
-
-'''
-emptyRDD = spark.sparkContext.emptyRDD()
-
-schema = StructType([
-    StructField('TimeStamp', StringType(), nullable=True),    
-    StructField('WT_mean', FloatType(), nullable=True),
-    StructField('W_mean', FloatType(), nullable=True),
-    StructField('Q_mean', FloatType(), nullable=True),
-    StructField('Stagione', StringType(), True),
-    StructField('ID', IntegerType(), nullable=True)
-  ])
-
-
-df_1 = spark.createDataFrame(emptyRDD,schema)
-df_2 = spark.createDataFrame(emptyRDD,schema)
-df_3 = spark.createDataFrame(emptyRDD,schema)
-'''
 inputs = [df_1st, df_2nd, df_3rd]
-#receivers = [df_1, df_2, df_3]
 
 for i in range(len(inputs)):
     
@@ -122,18 +92,12 @@ for i in range(len(inputs)):
     W_mean = valori[1]
     WT_mean = valori[2]
 
-    #newRow = spark.createDataFrame([(TimeStamp, WT_mean, W_mean, Q_mean, Stagione, Id)], receivers[i].columns)
     dataframe = spark.createDataFrame([(TimeStamp, WT_mean, W_mean, Q_mean, Stagione, Id)], ['TimeStamp', 'WT_mean', 'W_mean', 'Q_mean', 'Stagione', 'ID' ])
-    #receivers[i] = receivers[i].union(newRow)
-    #receivers[i].show()
-    #receivers[i].write.option("header",True).csv("test_folder", mode = 'append')
     dataframe.write.option("header",True).csv("test_folder", mode = 'append')
 
-#df_1.show()
-#df_2.show()
-#df_3.show()
-
-os.chdir('C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/test_folder')
+path = os.environ.get('my_path')
+path = path + 'test_folder'
+os.chdir(path)
 
 for file in list(os.listdir()):
     if file[-3:] != 'csv':
@@ -156,8 +120,6 @@ for i in range(len(ids)):
         os.rename(list(os.listdir())[i], 'created_csv_adige.csv')
     else:
         os.rename(list(os.listdir())[i], 'created_csv_talvera.csv')
-        
-#print(list(os.listdir()))
 
 publisher_str('3 file creati! è ora di salvarli')
 

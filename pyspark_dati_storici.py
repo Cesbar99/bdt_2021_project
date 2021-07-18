@@ -3,8 +3,6 @@ import findspark
 findspark.init('C:\spark-3.1.2-bin-hadoop3.2')
 findspark.find()
 import pyspark
-#findspark.find()
-
 
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
@@ -24,8 +22,6 @@ from dati_fiumi import MYSQLRivers, manager_dati_nuovi
 manager_mysql = MYSQLRivers()
 manager_mysql.create()
 
-#numeric_val = sc.parallelize([1,2,3,4])
-#numeric_val.map(lambda x:x*x*x).collect()
 
 def add_season(stringa):
     
@@ -59,8 +55,6 @@ def convert_null(value):
         return value
                                                                                     
 df = spark.read.json("historic_data.json")
-#df.printSchema()
-#df.show()
 
 udf_add_season = udf(add_season, StringType())
 udf_add_id = udf(add_id, IntegerType())
@@ -79,11 +73,7 @@ df = df.withColumnRenamed('WT_try', 'WT_mean')
 df = df.withColumnRenamed('W_try', 'W_mean')
 df = df.withColumnRenamed('Q_try', 'Q_mean')
 
-#df.printSchema()
 df = df.select('TimeStamp', 'Q_mean', 'W_mean', 'WT_mean', 'Stagione', 'ID')
-
-
-#df.show()
 
 df.createOrReplaceTempView("df")
 
@@ -106,30 +96,14 @@ df_1 = spark.sql("select * from df where ID = 1")
 df_2 = spark.sql("select * from df where ID = 2")
 df_3 = spark.sql("select * from df where ID = 3")
 
-#df_1.printSchema()
-#df_1.show()
-#df_2.show()
-#df_3.show()
-
-
-
-path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+path = os.environ.get('my_path') 
 path = path + 'test_folder'
 os.chdir(path)
-
-#df_1.write.option("header",True).csv(path, mode = 'append')
-#df_2.write.option("header",True).csv(path, mode = 'append')
-#df_3.write.option("header",True).csv(path, mode = 'append')
 
 df_1.toPandas().to_csv('testo1.csv', index = False)
 df_2.toPandas().to_csv('testo2.csv',index = False)
 df_3.toPandas().to_csv('testo3.csv',index = False)
-'''
 
-for file in list(os.listdir()):
-    if file[-3:] != 'csv':
-        os.remove(file)
-'''
 ids = []
 
 for file in list(os.listdir()):
@@ -148,10 +122,6 @@ for i in range(len(ids)):
     else:
         os.rename(list(os.listdir())[i], 'created_csv_talvera.csv')
         
-#print(list(os.listdir()))
-
-
-
 publisher_str('Dati storici in arrivo! è ora di salvarli')
 
 sc.stop()

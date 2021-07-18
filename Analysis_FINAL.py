@@ -232,7 +232,8 @@ def Analysis(river_name :str, variable :str):
     #sc.parallelize(Sequence(results), 1).objectFile(modelname)
 
     #results.plot_diagnostics(figsize=(15, 12))
-    #plt.show()    
+    #plt.show()   
+    #return results
     print('model saved')
 
     connection.close()

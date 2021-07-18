@@ -332,6 +332,10 @@ class MYSQLRivers:
             print('')
 
         else:
+
+            #Tabella_Adige-WT_mean_prediction.csv
+            #components = tabelle[i].split()
+            #fiile_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
             
             cursor = self.connection.cursor()
             path = os.environ.get('my_path')
@@ -340,13 +344,16 @@ class MYSQLRivers:
             files = list(os.listdir())
             tabelle = ['pred_Adige_Q_mean', 'pred_Adige_W_mean', 'pred_Adige_WT_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_W_mean', 'pred_Isarco_WT_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_W_mean', 'pred_Talvera_WT_mean']
             for i in range(len(tabelle)):
+                #Tabella_Adige-WT_mean_prediction.csv
+                components = tabelle[i].split('_')
+                fiile_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
                 query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
                             INTO TABLE {table_name}
                             FIELDS TERMINATED BY ','
                             ENCLOSED BY '"'
                             LINES TERMINATED BY '\n'
                             IGNORE 1 LINES; 
-                        """.format(path_and_file_name = path + files[i], table_name = tabelle[i]) #path + files[i]
+                        """.format(path_and_file_name = path + fiile_name, table_name = tabelle[i]) #path + files[i]
                 cursor.execute(query)
                 print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 

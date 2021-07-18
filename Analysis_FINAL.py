@@ -22,18 +22,6 @@ import pickle
 from mqtt_fiumi_publisher import publisher_str
 import joblib
 
-import findspark
-findspark.init('C:\spark-3.1.2-bin-hadoop3.2')
-findspark.find()
-import pyspark
-from pyspark import SparkContext, SparkConf
-from pyspark.sql import SparkSession
-from pyspark.sql import SQLContext
-conf = pyspark.SparkConf().setAppName('SparkApp').setMaster('local')
-sc = pyspark.SparkContext(conf=conf)
-sqlContext = SQLContext(sc)
-spark = SparkSession(sc)
-
 
 def Analysis(river_name :str, variable :str):
 
@@ -232,9 +220,10 @@ def Analysis(river_name :str, variable :str):
     #sc.parallelize(Sequence(results), 1).objectFile(modelname)
 
     #results.plot_diagnostics(figsize=(15, 12))
-    #plt.show()   
+    #plt.show() 
+    print('model saved')  
     #return results
-    print('model saved')
+    
 
     connection.close()
 
@@ -246,7 +235,7 @@ def prediction(modelname:str, variable: str, river_name:str, dataframe):
     filename = path  + modelname
     #results = pickle.load(open(filename, 'rb'))
     results = joblib.load(filename)
-    results = modelname
+    #results = model
     #query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
     #df = pd.read_sql(query, con=connection)
     df = dataframe
@@ -309,8 +298,8 @@ def prediction(modelname:str, variable: str, river_name:str, dataframe):
     else:
         id = 3
     name = river_name+'-'+variable
-    data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':(float(list_output[0].split(' - ')[0]) + float(list_output[0].split(' - ')[1]) )/2, '3h':(float(list_output[1].split(' - ')[0]) + float(list_output[1].split(' - ')[1]) )/2, '12h':(float(list_output[2].split(' - ')[0]) + float(list_output[2].split(' - ')[1]) )/2, '1d':(float(list_output[3].split(' - ')[0]) + float(list_output[3].split(' - ')[1]) )/2, '3d':(float(list_output[4].split(' - ')[0]) + float(list_output[4].split(' - ')[1]) )/2, '1w':(float(list_output[5].split(' - ')[0]) + float(list_output[5].split(' - ')[1]) )/2, 'Id':id}
-    #data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':list_output[0], '3h':list_output[1], '12h':list_output[2], '1d':list_output[3], '3d':list_output[4], '1w':list_output[5], 'Id':id}
+    #data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':(float(list_output[0].split(' - ')[0]) + float(list_output[0].split(' - ')[1]) )/2, '3h':(float(list_output[1].split(' - ')[0]) + float(list_output[1].split(' - ')[1]) )/2, '12h':(float(list_output[2].split(' - ')[0]) + float(list_output[2].split(' - ')[1]) )/2, '1d':(float(list_output[3].split(' - ')[0]) + float(list_output[3].split(' - ')[1]) )/2, '3d':(float(list_output[4].split(' - ')[0]) + float(list_output[4].split(' - ')[1]) )/2, '1w':(float(list_output[5].split(' - ')[0]) + float(list_output[5].split(' - ')[1]) )/2, 'Id':id}
+    data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':list_output[0], '3h':list_output[1], '12h':list_output[2], '1d':list_output[3], '3d':list_output[4], '1w':list_output[5], 'Id':id}
     dataframe = pd.DataFrame(data, index=[0])
     csvname = path+'/predictions_folder/{pred}.csv'.format(pred=name+'_prediction')
     dataframe.to_csv(csvname,index=False)

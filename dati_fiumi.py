@@ -484,7 +484,7 @@ class MYSQLRivers:
         
         self.connection.close()
 
-    def make_predictions(self, modelli:list):
+    def make_predictions(self):
 
         cursor = self.connection.cursor()
 
@@ -500,7 +500,7 @@ class MYSQLRivers:
                 query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = tabelle[i])
                 df = pd.read_sql(query, con= self.connection) 
 
-                #prediction(modello = modelli[i+j+k], variable = variabili[j], river_name=tabelle[i], dataframe = df)
+                #prediction(modello = model, variable = variabili[j], river_name=tabelle[i], dataframe = df)
                 prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
                 print('prediction completed for {element}'.format(element=tabelle[i]+'-'+variabili[j]))
 

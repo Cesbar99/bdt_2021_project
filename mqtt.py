@@ -10,7 +10,7 @@ def on_message_callback(client, userdata, message:mqtt.MQTTMessage):
 
     if message.payload.decode() == '3 file creati! è ora di salvarli':
         print(message.payload.decode())
-        manager.save(debug=False)#new_observation=True) #debug = True
+        manager.save(debug=False) #new_observation=True) #debug = True
     elif message.payload.decode() == 'Dati storici in arrivo! è ora di salvarli':
         print(message.payload.decode())
         manager.save(debug=False)

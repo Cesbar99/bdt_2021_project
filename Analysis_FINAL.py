@@ -1,3 +1,4 @@
+from typing import Sequence
 import pandas as pd 
 import numpy as np 
 import os 
@@ -20,6 +21,18 @@ import seaborn as sns
 import pickle
 from mqtt_fiumi_publisher import publisher_str
 import joblib
+
+import findspark
+findspark.init('C:\spark-3.1.2-bin-hadoop3.2')
+findspark.find()
+import pyspark
+from pyspark import SparkContext, SparkConf
+from pyspark.sql import SparkSession
+from pyspark.sql import SQLContext
+conf = pyspark.SparkConf().setAppName('SparkApp').setMaster('local')
+sc = pyspark.SparkContext(conf=conf)
+sqlContext = SQLContext(sc)
+spark = SparkSession(sc)
 
 
 def Analysis(river_name :str, variable :str):
@@ -209,12 +222,14 @@ def Analysis(river_name :str, variable :str):
 
     results = mod.fit()
     print('model trained')
-    path = 'E:/' #os.environ.get('path_model') # 'E:/'     
-    #os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
+    #path = 'E:/' #os.environ.get('path_model') # 'E:/'     
+    path = os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
     modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
     filename = path +  modelname  
-    pickle.dump(results, open(filename, 'wb'))
-    #joblib.dump(results, filename, compress=('zlib', 6))
+    #pickle.dump(results, open(filename, 'wb'))
+    joblib.dump(results, filename)
+    #results.save(filename)
+    #sc.parallelize(Sequence(results), 1).objectFile(modelname)
 
     #results.plot_diagnostics(figsize=(15, 12))
     #plt.show()    
@@ -222,15 +237,15 @@ def Analysis(river_name :str, variable :str):
 
     connection.close()
 
-def prediction(modello:object, variable: str, river_name:str, dataframe):
+def prediction(modelname:str, variable: str, river_name:str, dataframe):
 
     #path = 'E:/' 
     #path = os.environ.get('path_model')  
-    #path = os.environ.get('my_path')  
-    #filename = path  + modelname
+    path = os.environ.get('my_path')  
+    filename = path  + modelname
     #results = pickle.load(open(filename, 'rb'))
-    #results = joblib.load(filename)
-    results = modello
+    results = joblib.load(filename)
+    results = modelname
     #query = 'SELECT Timestamp, {variable} from {river_name}'.format(variable = variable,  river_name = river_name)
     #df = pd.read_sql(query, con=connection)
     df = dataframe

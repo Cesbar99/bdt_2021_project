@@ -500,15 +500,8 @@ class MYSQLRivers:
                 query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = tabelle[i])
                 df = pd.read_sql(query, con= self.connection) 
 
-                if tabelle[i] == 'Tabella_Adige':
-                    k = 0
-                elif tabelle[i] == 'Tabella_Isarco':
-                    k = 2
-                elif tabelle[i] == 'Tabella_Talvera':
-                    k = 4
-
-                prediction(modello = modelli[i+j+k], variable = variabili[j], river_name=tabelle[i], dataframe = df)
-                #prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
+                #prediction(modello = modelli[i+j+k], variable = variabili[j], river_name=tabelle[i], dataframe = df)
+                prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
                 print('prediction completed for {element}'.format(element=tabelle[i]+'-'+variabili[j]))
 
         cursor.close()

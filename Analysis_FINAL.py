@@ -51,74 +51,17 @@ def Analysis(river_name :str, variable :str):
 
     df = df.reset_index()
 
-    #df.describe()
-
-    #Create a df for the year 2019
-    y_19 = df.iloc[:7108]  ### ??? check 
-
-    #Create a df for the year 2020
-    y_20 = df.iloc[7108:16147]
-
-    #Create a df for the year 2021
-    y_21 = df.iloc[16147:]
-
-    #tks = np.arange(min(df['Timestamp']), max(df['Timestamp']), 30)
-    min_time = (min(df['Timestamp']))   
-    max_time = (max(df['Timestamp']))
-    ticks = []
-    #tks = np.arange(min_time, max_time)
+    
     start_time = df['Timestamp'].iloc[0]
     start_time = str(start_time)
     start_time = start_time.split()
     start_time = start_time[0]
     #print(start_time)
     x_data = pd.date_range(start_time, periods=30, freq='MS') 
-    # Check how this dates looks like:
-    #print(x_data)
-    for i in range(len(df)):
-        ticks.append(i)
-        
-    len(ticks)
+   
 
 
-    plt.figure(figsize=(16,10), dpi=100)
-    plt.plot(y_21['Timestamp'], y_21[variable], label = '2021')
-    plt.plot(y_20['Timestamp'], y_20[variable], color = 'green', label= '2020')
-    plt.plot(y_19['Timestamp'],y_19[variable], color = 'red', label = '2019' )
-    plt.xlabel('Date')
-    name_river = river_name.split('_')
-    name_river = name_river[1]
-    if variable == 'W_mean':
-        plt.ylabel('Water Level')
-        plt.title('Water level {name}'.format(name = name_river))    
-    elif variable == 'Q_mean':
-        plt.ylabel('Flow rate')
-        plt.title('Flow rate {name}'.format(name = name_river))
-    else:
-        plt.ylabel('Water Temperature')
-        plt.title('Water Temperature {name}'.format(name = name_river))
-
-    plt.legend()
-    plt.xticks()
-    # MODIFICARE I TICKS 
-    #plt.show()
-
-    # Output the maximum and minimum temperature date
-    #print(df.loc[df[variable] == df[variable].max()])
-    #print(df.loc[df[variable] == df[variable].min()])
-
-    # Plot the daily temperature change 
-    plt.figure(figsize=(16,10), dpi=100)
-    plt.plot(df['Timestamp'], df[variable], color='tab:red')
-    # MODIFICARE I TICKS 
-    if variable == 'W_mean':
-        plt.gca().set(title="Water level {name}".format(name = name_river) , xlabel='Date', ylabel="Water Level")    
-    elif variable == 'Q_mean':
-        plt.gca().set(title="Flow Rate {name}".format(name = name_river) , xlabel='Date', ylabel="Flow Rate")
-    else:
-        plt.gca().set(title="Water Temperature {name}".format(name = name_river) , xlabel='Date', ylabel="Water Temperature")
-    
-    #plt.show()
+   
 
     from statsmodels.tsa.seasonal import seasonal_decompose
 
@@ -213,7 +156,7 @@ def Analysis(river_name :str, variable :str):
     #os.environ.get('my_path') #C:/Users/Cesare/OneDrive/studio/magistrale-data-science/big-data-tech/bdt_2021_project/'
     modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
     filename = path +  modelname  
-    pickle.dump(results, open(filename, 'wb'))
+    joblib.dump(results, filename)
     #joblib.dump(results, filename, compress=('zlib', 6))
 
     #results.plot_diagnostics(figsize=(15, 12))
@@ -293,8 +236,8 @@ def prediction(modello:object, variable: str, river_name:str, dataframe):
     else:
         id = 3
     name = river_name+'-'+variable
-    data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':(float(list_output[0].split(' - ')[0]) + float(list_output[0].split(' - ')[1]) )/2, '3h':(float(list_output[1].split(' - ')[0]) + float(list_output[1].split(' - ')[1]) )/2, '12h':(float(list_output[2].split(' - ')[0]) + float(list_output[2].split(' - ')[1]) )/2, '1d':(float(list_output[3].split(' - ')[0]) + float(list_output[3].split(' - ')[1]) )/2, '3d':(float(list_output[4].split(' - ')[0]) + float(list_output[4].split(' - ')[1]) )/2, '1w':(float(list_output[5].split(' - ')[0]) + float(list_output[5].split(' - ')[1]) )/2, 'Id':id}
-    #data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':list_output[0], '3h':list_output[1], '12h':list_output[2], '1d':list_output[3], '3d':list_output[4], '1w':list_output[5], 'Id':id}
+    #data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':(float(list_output[0].split(' - ')[0]) + float(list_output[0].split(' - ')[1]) )/2, '3h':(float(list_output[1].split(' - ')[0]) + float(list_output[1].split(' - ')[1]) )/2, '12h':(float(list_output[2].split(' - ')[0]) + float(list_output[2].split(' - ')[1]) )/2, '1d':(float(list_output[3].split(' - ')[0]) + float(list_output[3].split(' - ')[1]) )/2, '3d':(float(list_output[4].split(' - ')[0]) + float(list_output[4].split(' - ')[1]) )/2, '1w':(float(list_output[5].split(' - ')[0]) + float(list_output[5].split(' - ')[1]) )/2, 'Id':id}
+    data = {'Timestamp':str(df.iloc[[-1]].Timestamp).split()[1]+' '+str(df.iloc[[-1]].Timestamp).split()[2],'1h':list_output[0], '3h':list_output[1], '12h':list_output[2], '1d':list_output[3], '3d':list_output[4], '1w':list_output[5], 'Id':id}
     dataframe = pd.DataFrame(data, index=[0])
     csvname = path+'/predictions_folder/{pred}.csv'.format(pred=name+'_prediction')
     dataframe.to_csv(csvname,index=False)

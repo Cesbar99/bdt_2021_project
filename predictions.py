@@ -10,13 +10,15 @@ manager = dati_fiumi.MYSQLRivers()
 nomi_modelli = ['Tabella_Adige-Q_mean_model', 'Tabella_Adige-W_mean_model', 'Tabella_Adige-WT_mean_model', 'Tabella_Isarco-Q_mean_model', 'Tabella_Isarco-W_mean_model', 'Tabella_Isarco-WT_mean_model', 'Tabella_Talvera-Q_mean_model', 'Tabella_Talvera-W_mean_model','Tabella_Talvera-WT_mean_model']
 lista_modelli = []
 
-path = os.environ.get('my_path')  
-#path = 'E/'
-for modello in lista_modelli:
+print('Inizio a estrarre i modelli')
+#path = os.environ.get('my_path')  
+path = 'E:/'
+for modello in nomi_modelli:
     filename = path  + modello
     results = joblib.load(filename)
     lista_modelli.append(results)
-
+print('modelli estratti')
+print(lista_modelli)
 cursor = manager.connection.cursor()
 query = 'select Timestamp from Tabella_Adige ORDER BY Timestamp DESC LIMIT 1;'
 cursor.execute(query)
@@ -43,4 +45,4 @@ while True:
         print('no new observations')
         #print(current_date)
     
-    time.sleep(60)
+    time.sleep(300)

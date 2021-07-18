@@ -443,7 +443,7 @@ class MYSQLRivers:
                     cursor.execute(MYSQLRivers.query_table(table_name))
                 else:
                     #tabelle = ['pred_Isarco_Q_mean', 'pred_Isarco_W_mean', 'pred_Isarco_WT_mean', 'pred_Adige_Q_mean', 'pred_Adige_W_mean', 'pred_Adige_WT_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_W_mean', 'pred_Talvera_WT_mean']
-                    create_table_query = '''
+                    """create_table_query = '''
                         CREATE TABLE {nome_tabella}
                         (
                         Timestamp DATETIME NOT NULL,
@@ -455,9 +455,9 @@ class MYSQLRivers:
                         {var}_1w  FLOAT (20,2) ,
                         Id INT
                         )
-                        '''.format(nome_tabella = table_name, var = table_name[-6:])
+                        '''.format(nome_tabella = table_name, var = table_name[-6:])"""
 
-                    """
+                    
                     create_table_query = '''
                         CREATE TABLE {nome_tabella}
                         (
@@ -473,7 +473,7 @@ class MYSQLRivers:
                         '''.format(nome_tabella = table_name, var = table_name[-6:])
 
                     cursor.execute(create_table_query)
-                    """
+                    
            
             cursor.close()
                 

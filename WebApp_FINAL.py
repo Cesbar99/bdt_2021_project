@@ -30,8 +30,6 @@ from streamlit_folium import folium_static
 import folium
 import json
 from bokeh.plotting import figure
-#from Analysis_FINAL import * 
-import pymysql
 import joblib
 
 connection = mysql.connector.connect(
@@ -141,196 +139,46 @@ if st.checkbox('Show dataframe'):
     chart_data
 
 st.write('Let\'s take a look to the data')
-st.line_chart(df[diz_measures[variable_name_key]])
+df2 = df
+st.line_chart(df2.rename(columns={'Timestamp':'index'}).set_index('index'))
+#st.line_chart(df[diz_measures[variable_name_key]])
 
 # CHECKBOX FOR PREDICTION 
 
-#st.selectbox('Choose the prediction time',
-#('two hour','Three hours', 'Twelve hours', 'two day', 'Three Days' 'two week'))
+time = st.selectbox('Choose the prediction time',
+('One hour','Three hours', 'Twelve hours', 'One day', 'Three Days','One week'))
 
-time = st.slider('Decide how far to move in the future (hrs) ', 1 , 168)
+<<<<<<< Updated upstream
+diz_time = {'One hour': 1, 'Three hours' :2 , 'Twelve hours': 3, 'One day' : 4, 'Three Days' : 5,'One week':6}
 
-diz_times = {1: 'one hour',
-            2: 'two hours',
-            3: 'three hours',
-            4 : 'four hours',
-            5 : 'five hours', 
-            6 : 'six hours', 
-            7 : 'seven hours',
-            8 : 'eight hours',
-            9 : 'nine hours', 
-            10 : 'ten hours',
-            11: 'eleven hours',
-            12 : 'twelve hours', 
-            13 : 'thirteen hours',
-            14 : 'fourteen hours',
-            15 : 'fifteen hours', 
-            16 : 'sixteen hours', 
-            17 : 'seventeen hours', 
-            18 : 'eighteen hours', 
-            19 : 'nineteen hours',
-            20 : 'twenty hours', 
-            21 : 'twenty two hours',
-            22 : 'twenty two hours', 
-            23 : 'tenty three hours', 
-            24 : 'one day',
-            25 :  'one day & one hour',
-            26 :  'one day & two hours',
-            27 :  'one day & three hours',
-            28 : 'one day & four hours',
-            29 : 'one day & five hours', 
-            30 : 'one day & six hours', 
-            31 : 'one day & seven hours',
-            32 : 'one day & eight hours',
-            33 : 'one day & nine hours', 
-            34 : 'one day & ten hours',
-            35:  'one day & eleven hours',
-            36 : 'one day & twelve hours', 
-            37 : 'one day & thirteen hours',
-            38 : 'one day & fourteen hours',
-            39 : 'one day & fifteen hours', 
-            40 : 'one day & sixteen hours', 
-            41 : 'one day & seventeen hours', 
-            42 : 'one day & eighteen hours', 
-            43 : 'one day & nineteen hours',
-            44 : 'one day & twenty hours', 
-            45 : 'one day & twenty one hours',
-            46 : 'one day & twenty two hours', 
-            47 : 'one day & tenty three hours', 
-            48 : 'two days',
-            49 :  'two days & one hour',
-            50 :  'two days & two hours',
-            51 :  'two days & three hours',
-            52 : 'two days & four hours',
-            53 : 'two days & five hours', 
-            54 : 'two days & six hours', 
-            55 : 'two days & seven hours',
-            56 : 'two days & eight hours',
-            57 : 'two days & nine hours', 
-            58 : 'two days & ten hours',
-            59:  'two days & eleven hours',
-            60 : 'two days & twelve hours', 
-            61 : 'two days & thirteen hours',
-            62 : 'two days & fourteen hours',
-            63 : 'two days & fifteen hours', 
-            64 : 'two days & sixteen hours', 
-            65 : 'two days & seventeen hours', 
-            66 : 'two days & eighteen hours', 
-            67 : 'two days & nineteen hours',
-            68 : 'two days & twenty hours', 
-            69 : 'two days & twenty two hours',
-            70 : 'two days & twenty two hours', 
-            71 : 'two days & tenty three hours', 
-            72 : 'three days',
-            73 :  'three days & one hour',
-            74 :  'three days & two hours',
-            75 :  'three days & three hours',
-            76 : 'three days & four hours',
-            77 : 'three days & five hours', 
-            78 : 'three days & six hours', 
-            79 : 'three days & seven hours',
-            80 : 'three days & eight hours',
-            81 : 'three days & nine hours', 
-            82 : 'three days & ten hours',
-            83:  'three days & eleven hours',
-            84 : 'three days & twelve hours', 
-            85 : 'three days & thirteen hours',
-            86 : 'three days & fourteen hours',
-            87 : 'three days & fifteen hours', 
-            88 : 'three days & sixteen hours', 
-            89 : 'three days & seventeen hours', 
-            90 : 'three days & eighteen hours', 
-            91 : 'three days & nineteen hours',
-            92 : 'three days & twenty hours', 
-            93 : 'three days & twenty one hours',
-            94 : 'three days & twenty two hours', 
-            95 : 'three days & tenty three hours', 
-            96 : 'four days',
-            97 :  'four days & one hour',
-            98 :  'four days & two hours',
-            99 :  'four days & three hours',
-            100 : 'four days & four hours',
-            101 : 'four days & five hours', 
-            102 : 'four days & six hours', 
-            103 : 'four days & seven hours',
-            104 : 'four days & eight hours',
-            105 : 'four days & nine hours', 
-            106 : 'four days & ten hours',
-            107:  'four days & eleven hours',
-            108 : 'four days & twelve hours', 
-            109 : 'four days & thirteen hours',
-            110 : 'four days & fourteen hours',
-            111 : 'four days & fifteen hours', 
-            112 : 'four days & sixteen hours', 
-            113 : 'four days & seventeen hours', 
-            114 : 'four days & eighteen hours', 
-            115 : 'four days & nineteen hours',
-            116 : 'four days & twenty hours', 
-            117: 'four days & twenty one hours',
-            118: 'four days & twenty two hours', 
-            119: 'four days & tenty three hours', 
-            120: 'five days',
-            121 :  'five days & one hour',
-            122:  'five days & two hours',
-            123:  'five days & three hours',
-            124 : 'five days & four hours',
-            125 : 'five days & five hours', 
-            126 : 'five days & six hours', 
-            127 : 'five days & seven hours',
-            128 : 'five days & eight hours',
-            129 : 'five days & nine hours', 
-            130 : 'five days & ten hours',
-            131:  'five days & eleven hours',
-            132 : 'five days & twelve hours', 
-            133 : 'five days & thirteen hours',
-            134 : 'five days & fourteen hours',
-            135 : 'five days & fifteen hours', 
-            136 : 'five days & sixteen hours', 
-            137 : 'five days & seventeen hours', 
-            138 : 'five days & eighteen hours', 
-            139 : 'five days & nineteen hours',
-            140 : 'five days & twenty hours', 
-            141: 'five days & twenty one hours',
-            142: 'five days & twenty two hours', 
-            143: 'five days & tenty three hours', 
-            144: 'six days',
-            145 :  'six days & one hour',
-            146:  'six days & two hours',
-            147 :  'six days & three hours',
-            148 : 'six days & four hours',
-            149 : 'six days & five hours', 
-            150 : 'six days & six hours', 
-            151 : 'six days & seven hours',
-            152 : 'six days & eight hours',
-            153 : 'six days & nine hours', 
-            154 : 'six days & ten hours',
-            155:  'six days & eleven hours',
-            156 : 'six days & twelve hours', 
-            157 : 'six days & thirteen hours',
-            158 : 'six days & fourteen hours',
-            159 : 'six days & fifteen hours', 
-            160 : 'six days & sixteen hours', 
-            161 : 'six days & seventeen hours', 
-            162 : 'six days & eighteen hours', 
-            163 : 'six days & nineteen hours',
-            164 : 'six days & twenty hours', 
-            165: 'six days & twenty one hours',
-            166: 'six days & twenty two hours', 
-            167: 'six days & tenty three hours', 
-            168: 'one week '}
 
 def analysis(data_set_name,variable_name_key, time):
     #path = 'E:/' # We saved the models into a USB pen 
-    path = os.environ.get('my_path')
+    #model_name = 'Tabella_' + data_set_name + '-' + diz_measures[variable_name_key] + '_model'
+    #filename = path  + model_name
+    #results = joblib.load(open(filename, 'rb'))
+    #start_pred = len(df)
+    #pred_time = start_pred + diz_time[time] 
+    #pred = results.get_prediction(start = pred_time , dynamic=False)
+    #pred_ci = pred.conf_int()
+    query = 'select * from pred_{name}_{variable} ORDER BY Timestamp DESC LIMIT 1;'.format(name =data_set_name, variable = diz_measures[variable_name_key])  #pred_Adige_Q_mean
+    cursor.execute(query)
+    output = cursor.fetchall()
+    output = output[0]
+    output = output[diz_time[time]]
+    
+    
+=======
+diz_time = {'One hour': 1, 'Three hours' :3 , 'Twelve hours': 12, 'One day' : 24, 'Three Days' : 72,'One week':168}
+
+
+def analysis(data_set_name,variable_name_key, time):
+    path = 'E:/' # We saved the models into a USB pen 
     model_name = 'Tabella_' + data_set_name + '-' + diz_measures[variable_name_key] + '_model'
-    print(model_name)
-    print(data_set_name)
-    print(diz_measures[variable_name_key])
     filename = path  + model_name
-    print(filename)
-    results = pickle.load(open(filename, 'rb'))
+    results = joblib.load(open(filename, 'rb'))
     start_pred = len(df)
-    pred_time = start_pred + time 
+    pred_time = start_pred + diz_time[time] 
     pred = results.get_prediction(start = pred_time , dynamic=False)
     pred_ci = pred.conf_int()
     
@@ -338,7 +186,8 @@ def analysis(data_set_name,variable_name_key, time):
     output_u = str(pred_ci['upper variable_actual']).split()
     output = output_l[1] + ' - ' + output_u[1]
     plt.figure(figsize=(16,10), dpi=100)
-    ax = df[diz_measures[variable_name_key]][:].plot(label='observed')
+    ax = df[diz_measures[variable_name_key]][:].plot(label= 'observed')
+    
     pred.predicted_mean.plot(ax=ax, label='Forecast')
     ax.fill_between(pred_ci.index,
                     pred_ci.iloc[:, 0],
@@ -347,15 +196,16 @@ def analysis(data_set_name,variable_name_key, time):
     ax.set_ylabel(diz_unit[variable_name_key])
     plt.legend()
     plt.xlim([start_pred -150,start_pred + 200])
-    plt.title('Prediction of {river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = diz_times[time], result = output))
+    plt.title('Prediction of {river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = output))
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
+>>>>>>> Stashed changes
     return output
 
 prediction_interval = analysis(data_set_name,variable_name_key, time)
 #st.write(prediction_interval)
 
-st.write('{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = diz_times[time], result = prediction_interval))
+st.write('{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = prediction_interval))
 
 
 

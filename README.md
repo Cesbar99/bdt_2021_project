@@ -35,6 +35,7 @@ The procedure is the same for the historic data:
 1)  we have to launch `mqtt.py` 
 2)  we have to call  `rivers_operation.py` or `pyspark_dati_nuovi.py`.
 ### Model and predictions 
+Before making the predictions there is the need to create and save the predictions models. This is a costly operation indeed, it requires a lot of time and the models are quite heavy, each is almost 2GB. Nevertheless, this operation needs to be made only once and then speeds up the processes becausecwe do not need to train the model each time we want to make predictions.   
 When we run `rivers_operation.py` we are also saying to the machine to make predictions on the state of the rivers after 1hour, 3hours, 12hours, one day, three days and one week. 
 These observations are then stored in a new tabel where we collect the `Timestamp` of the last observation, and the prediction for each time horizon. 
 The predictions are made thanks to the autoregressive model implemented in `analysis_FINAL.py`. 

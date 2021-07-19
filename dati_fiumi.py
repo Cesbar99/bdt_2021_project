@@ -264,7 +264,7 @@ class MYSQLRivers:
     
     def __init__(self)-> None:
         
-        self.trigger = 0
+        
         self.connection = mysql.connector.connect(
         host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
         port =  3310,
@@ -301,8 +301,8 @@ class MYSQLRivers:
                 else:                   
                     tabelle.append('Tabella_' + to_add)
 
-            cursor = self.connection.cursor()
             query = 'SET GLOBAL local_infile=1;'
+            cursor = self.connection.cursor()
             cursor.execute(query)
 
             for i in range(len(tabelle)):
@@ -335,14 +335,14 @@ class MYSQLRivers:
             for i in range(len(tabelle)):
 
                 components = tabelle[i].split('_')
-                fiile_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
+                file_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
                 query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
                             INTO TABLE {table_name}
                             FIELDS TERMINATED BY ','
                             ENCLOSED BY '"'
                             LINES TERMINATED BY '\n'
                             IGNORE 1 LINES; 
-                        """.format(path_and_file_name = path + fiile_name, table_name = tabelle[i]) 
+                        """.format(path_and_file_name = path + file_name, table_name = tabelle[i]) 
                 cursor.execute(query)
                 print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
 
@@ -457,7 +457,7 @@ class MYSQLRivers:
         else:
             print('All tables already present, ready to get new data!')
         
-        self.connection.close()
+        #self.connection.close()
 
     def make_predictions(self):
 

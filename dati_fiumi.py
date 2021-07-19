@@ -331,7 +331,7 @@ class MYSQLRivers:
             path = path + 'predictions_folder/'
             os.chdir(path)
             files = list(os.listdir())
-            tabelle = ['pred_Adige_Q_mean', 'pred_Adige_W_mean', 'pred_Adige_WT_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_W_mean', 'pred_Isarco_WT_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_W_mean', 'pred_Talvera_WT_mean']
+            tabelle = ['pred_Adige_Q_mean', 'pred_Adige_WT_mean', 'pred_Adige_W_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_WT_mean', 'pred_Isarco_W_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_WT_mean', 'pred_Talvera_W_mean']
             for i in range(len(tabelle)):
 
                 components = tabelle[i].split('_')
@@ -461,7 +461,7 @@ class MYSQLRivers:
 
     def make_predictions(self):
 
-        cursor = self.connection.cursor()
+        
 
         tabelle = ['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
         variabili = ['Q_mean', 'W_mean', 'WT_mean']
@@ -470,7 +470,7 @@ class MYSQLRivers:
 
         for i in range(len(tabelle)):
             for j in range(len(variabili)):
-                
+                cursor = self.connection.cursor()
                 query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = tabelle[i])
                 #df = pd.read_sql(query, con= self.connection) 
                 cursor.execute(query)
@@ -479,7 +479,7 @@ class MYSQLRivers:
                 prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
                 print('prediction completed for {element}'.format(element=tabelle[i]+'-'+variabili[j]))
 
-        cursor.close()
+                cursor.close()
 
         publisher_str('Previsioni completate, salvale!')
         

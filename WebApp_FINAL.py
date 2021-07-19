@@ -143,25 +143,44 @@ def analysis(data_set_name,variable_name_key, time):
         st.write('It\'s to early for prediction...Waiting for new data!')
         return 
 
-    output = output.split(',')
-    Timestamp_x = query[0]
-    value_y = query[diz_time[time]]
-    value_y = value_y.split('-') 
+    output = output[0]
+    
+    output = list(output)
+    
+    
+    values = output[diz_time[time]]
+    
+    values = values.split('-')
+    if len(values) == 3:
+        
+        values = values[1:]
+        values[0] = '-' + values[0]
+    
+    
+    val_tit = values
+
+    
+    
     new_y = []
-    for el in value_y :
+    
+    for el in values :
         el = el.strip()
+        
         new_y.append(float(el))
         
-    Timestamp_x
-    xs = [len(df) + 10 , len(df) +10]
-    plt.plot(df['W_mean'][-50:] ,label = 'actual')
+    print(new_y)    
+    #
+    xs = [df.index[-1] + diz_time[time] , df.index[-1] + diz_time[time]]
+    plt.plot(df[diz_measures[variable_name_key]][-50:] ,label = 'actual')
     plt.plot(xs, new_y, label = 'forecast')
     plt.xlabel('Date')
-    plt.xlabel(diz_unit[variable_name_key])
-    plt.title('Predictions of {river_name}\'s {variable} in {time_correct}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = prediction_interval))
+    plt.ylabel(diz_unit[variable_name_key])
+    plt.title('Predictions of {river_name}\'s {variable} in {time_correct}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = val_tit))
+    plt.legend()
+    plt.show()
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
-    st.write('{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = prediction_interval))
+    st.write('{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = val_tit ))
 
 
 prediction_interval = analysis(data_set_name,variable_name_key, time)

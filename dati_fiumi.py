@@ -472,8 +472,10 @@ class MYSQLRivers:
             for j in range(len(variabili)):
                 
                 query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = tabelle[i])
-                df = pd.read_sql(query, con= self.connection) 
-
+                #df = pd.read_sql(query, con= self.connection) 
+                cursor.execute(query)
+                output = cursor.fetchall()
+                df = pd.DataFrame(output)
                 prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
                 print('prediction completed for {element}'.format(element=tabelle[i]+'-'+variabili[j]))
 

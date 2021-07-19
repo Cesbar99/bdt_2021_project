@@ -1,25 +1,8 @@
-from typing import Sequence
 import pandas as pd 
 import numpy as np 
 import os 
 from pandas import *
-from pandas.plotting import lag_plot, autocorrelation_plot
-import matplotlib.pyplot as plt 
-from statsmodels.tsa.ar_model import AutoReg
-from statsmodels.graphics.tsaplots import plot_acf
-from sklearn.metrics import mean_squared_error
-from math import sqrt
 import mysql.connector
-from statsmodels.graphics.tsaplots import plot_pacf
-from statsmodels.tsa.arima_process import ArmaProcess
-from statsmodels.tsa.stattools import pacf
-from statsmodels.regression.linear_model import yule_walker
-from statsmodels.tsa.stattools import adfuller
-import statsmodels.api as sm
-from mysql.connector import connection
-import seaborn as sns 
-import pickle
-from mqtt_fiumi_publisher import publisher_str
 import joblib
 
 
@@ -116,8 +99,8 @@ def Analysis(river_name :str, variable :str):
 
     results = mod.fit()
     print('model trained')
-    #path = 'E:/'   
-    path = os.environ.get('my_path') 
+    path = 'E:/'   
+    #path = os.environ.get('my_path') 
     modelname = '{river_name}-{variable}_model'.format(river_name = river_name, variable = variable) 
     filename = path +  modelname  
     joblib.dump(results, filename)
@@ -127,8 +110,8 @@ def Analysis(river_name :str, variable :str):
 
 def prediction(modelname:str, variable: str, river_name:str, dataframe):
 
-    #path = 'E:/'  
-    path = os.environ.get('my_path')  
+    path = 'E:/'  
+    #path = os.environ.get('my_path')  
     filename = path  + modelname
     results = joblib.load(filename)
     df = dataframe

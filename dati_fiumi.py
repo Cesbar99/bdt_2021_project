@@ -10,9 +10,6 @@ from datetime import datetime
 from typing import List, Optional
 from mysql.connector import cursor
 import requests
-import sqlite3
-import textwrap
-import math
 import pandas as pd
 import sys
 from Analysis_FINAL import prediction

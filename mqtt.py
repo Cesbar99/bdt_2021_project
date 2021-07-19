@@ -1,8 +1,6 @@
 import os
 from paho.mqtt import client as mqtt
-import time
-from datetime import datetime
-from dati_fiumi import Rivers, MYSQLRivers
+from dati_fiumi import MYSQLRivers
 
 ########################################
 

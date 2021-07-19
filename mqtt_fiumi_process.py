@@ -1,13 +1,6 @@
 from __future__ import absolute_import, annotations
-
-import os
-import json
-import time
-from datetime import datetime
-from typing import List, Optional
 import requests
-import sqlite3
-import textwrap
+
 
 from mqtt_fiumi_publisher import publisher
 from dati_fiumi import raw_rivers, Rivers

@@ -177,7 +177,6 @@ def analysis(data_set_name,variable_name_key, time):
     plt.ylabel(diz_unit[variable_name_key])
     plt.title('Predictions of {river_name}\'s {variable} in {time_correct}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = val_tit))
     plt.legend()
-    
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
     st.write('{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = val_tit ))

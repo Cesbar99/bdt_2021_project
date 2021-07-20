@@ -12,9 +12,9 @@ output = cursor.fetchall()
 last_datetime =output[0][0]
 cursor.close()
 print(last_datetime)
-
+manager.connection.close()
 while True:
-
+    manager =  dati_fiumi.MYSQLRivers()
     cursor = manager.connection.cursor()
     query = 'select Timestamp from Tabella_Adige ORDER BY Timestamp DESC LIMIT 1;'
     cursor.execute(query)
@@ -31,4 +31,5 @@ while True:
     else:
         print('no new observations')
     
+    manager.connection.close()
     time.sleep(60)

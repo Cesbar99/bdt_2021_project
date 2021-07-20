@@ -10,14 +10,17 @@ def on_message_callback(client, userdata, message:mqtt.MQTTMessage):
         manager = MYSQLRivers()
         print(message.payload.decode())
         manager.save(debug=False) #new_observation=True) #debug = True
+        manager.connection.close()
     elif message.payload.decode() == 'Dati storici in arrivo! è ora di salvarli':
         manager = MYSQLRivers()
         print(message.payload.decode())
         manager.save(debug=False)
+        manager.connection.close()
     elif message.payload.decode() == 'Previsioni completate, salvale!':
         manager = MYSQLRivers()
         print(message.payload.decode())
         manager.save(prediction=True) #debug = True
+        manager.connection.close()
     
 ########################################
     

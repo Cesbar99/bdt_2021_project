@@ -140,7 +140,7 @@ def analysis(data_set_name,variable_name_key, time):
     
    
     if output == [] or output == 'None' :
-        st.write('It\'s to early for prediction...Waiting for new data!')
+        st.write('It\'s too early for prediction...Waiting for new data!')
         return 
 
     output = output[0]

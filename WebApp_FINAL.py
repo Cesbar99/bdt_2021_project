@@ -171,12 +171,14 @@ def analysis(data_set_name,variable_name_key, time):
     print(new_y)    
     #
     xs = [df.index[-1] + diz_time[time] , df.index[-1] + diz_time[time]]
-    plt.plot(df[diz_measures[variable_name_key]][-50:] ,label = 'actual')
+    df.Timestamp = pd.to_datetime(df.Timestamp)
+    plt.plot(df[diz_measures[variable_name_key]][-50:], label = 'actual')
     plt.plot(xs, new_y, label = 'forecast')
-    plt.xlabel('Date')
+    
     plt.ylabel(diz_unit[variable_name_key])
     plt.title('Predictions of {river_name}\'s {variable} in {time_correct}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = val_tit))
     plt.legend()
+    plt.xticks([])
     st.set_option('deprecation.showPyplotGlobalUse', False)
     st.pyplot()
     st.write('{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = val_tit ))

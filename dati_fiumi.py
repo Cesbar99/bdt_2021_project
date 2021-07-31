@@ -339,13 +339,13 @@ class MYSQLRivers:
             else:
                 nome = 'Talvera'
             #tabelle = ['pred_Adige_Q_mean', 'pred_Adige_WT_mean', 'pred_Adige_W_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_WT_mean', 'pred_Isarco_W_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_WT_mean', 'pred_Talvera_W_mean']
-            tabelle = ['pred_{fiume}_Q_mean'.format(fiume = nome), 'pred_{fiume}_W_mean'.format(fiume = nome), 'pred_{fiume}_WT_mean'.format(fiume = nome)]
+            tabelle = ['pred_{fiume}_Q_mean'.format(fiume = nome), 'pred_{fiume}_WT_mean'.format(fiume = nome), 'pred_{fiume}_W_mean'.format(fiume = nome)]
             i = 0 
             while (len(files)) > 0 :
 
                 #components = files[i].split('_')
                 #file_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
-                file_name = files[i]
+                file_name = files[0]
                 query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
                             INTO TABLE {table_name}
                             FIELDS TERMINATED BY ','
@@ -354,12 +354,12 @@ class MYSQLRivers:
                             IGNORE 1 LINES; 
                         """.format(path_and_file_name = path + file_name, table_name = tabelle[i]) 
                 cursor.execute(query)
-                print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
+                print( 'Salvato il file: {file_name}!'.format(file_name = files[0]) )
 
-                os.remove( path+'{file_name}'.format(file_name = files[i]) )
-                print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
-                files.remove(files[i])
-                 
+                os.remove( path+'{file_name}'.format(file_name = files[0]) )
+                print( 'Rimosso il file: {file_name}'.format(file_name = files[0]) )
+                files.remove(files[0])
+                i += 1 
             cursor.close()
 
             print('Terminato con successo!')
@@ -491,7 +491,7 @@ class MYSQLRivers:
             print('prediction completed for {element}'.format(element= fiume+'-'+variabili[j]))
 
             cursor.close()
-
+        
         publisher_str('Previsioni completate, salvale!')
         
     

@@ -151,3 +151,4 @@ def prediction(modelname:str, variable: str, river_name:str, dataframe):
     dataframe.to_csv(csvname,index=False)
 
 
+

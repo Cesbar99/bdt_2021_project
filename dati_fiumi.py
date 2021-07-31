@@ -331,11 +331,21 @@ class MYSQLRivers:
             path = path + 'predictions_folder/'
             os.chdir(path)
             files = list(os.listdir())
-            tabelle = ['pred_Adige_Q_mean', 'pred_Adige_WT_mean', 'pred_Adige_W_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_WT_mean', 'pred_Isarco_W_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_WT_mean', 'pred_Talvera_W_mean']
-            for i in range(len(tabelle)):
+            file_name = files[0]
+            if 'Adige' in file_name :
+                nome = 'Adige'
+            elif 'Isarco' in file_name:
+                nome = 'Isarco'
+            else:
+                nome = 'Talvera'
+            #tabelle = ['pred_Adige_Q_mean', 'pred_Adige_WT_mean', 'pred_Adige_W_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_WT_mean', 'pred_Isarco_W_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_WT_mean', 'pred_Talvera_W_mean']
+            tabelle = ['pred_{fiume}_Q_mean'.format(fiume = nome), 'pred_{fiume}_W_mean'.format(fiume = nome), 'pred_{fiume}_WT_mean'.format(fiume = nome)]
+            i = 0 
+            while (len(files)) > 0 :
 
-                components = tabelle[i].split('_')
-                file_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
+                #components = files[i].split('_')
+                #file_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
+                file_name = files[i]
                 query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
                             INTO TABLE {table_name}
                             FIELDS TERMINATED BY ','
@@ -348,7 +358,8 @@ class MYSQLRivers:
 
                 os.remove( path+'{file_name}'.format(file_name = files[i]) )
                 print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
-
+                files.remove(files[i])
+                 
             cursor.close()
 
             print('Terminato con successo!')

@@ -355,6 +355,7 @@ class MYSQLRivers:
                         """.format(path_and_file_name = path + file_name, table_name = tabelle[i]) 
                 cursor.execute(query)
                 query = ' delete from {nome_tabella} where Timestamp = null'.format(nome_tabella = tabelle[i])
+                cursor.execute(query)
                 print( 'Salvato il file: {file_name}!'.format(file_name = files[0]) )
 
                 os.remove( path+'{file_name}'.format(file_name = files[0]) )

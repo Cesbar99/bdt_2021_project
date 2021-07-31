@@ -459,27 +459,27 @@ class MYSQLRivers:
         
         #self.connection.close()
 
-    def make_predictions(self):
+    def make_predictions(self, fiume):
 
         
 
-        tabelle = ['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
+        #tabelle = ['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
         variabili = ['Q_mean', 'W_mean', 'WT_mean']
 
         print('starting predictions')
 
-        for i in range(len(tabelle)):
-            for j in range(len(variabili)):
-                cursor = self.connection.cursor()
-                query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = tabelle[i])
+        #for i in range(len(tabelle)):
+        for j in range(len(variabili)):
+            cursor = self.connection.cursor()
+            query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = fiume)
                 #df = pd.read_sql(query, con= self.connection) 
-                cursor.execute(query)
-                output = cursor.fetchall()
-                df = pd.DataFrame(output)
-                prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
-                print('prediction completed for {element}'.format(element=tabelle[i]+'-'+variabili[j]))
+            cursor.execute(query)
+            output = cursor.fetchall()
+            df = pd.DataFrame(output)
+            prediction(modelname = fiume +'-'+variabili[j]+'_model', variable = variabili[j], river_name= fiume, dataframe = df)
+            print('prediction completed for {element}'.format(element= fiume+'-'+variabili[j]))
 
-                cursor.close()
+            cursor.close()
 
         publisher_str('Previsioni completate, salvale!')
         

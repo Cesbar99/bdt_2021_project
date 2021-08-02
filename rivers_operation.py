@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 
 manager_mysql = MYSQLRivers()
 manager_mysql.create()
-
+manager_mysql.connection.close()
 while True:
 
     url = 'http://dati.retecivica.bz.it/services/meteo/v1/sensors'

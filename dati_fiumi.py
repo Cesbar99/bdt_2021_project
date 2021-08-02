@@ -10,9 +10,6 @@ from datetime import datetime
 from typing import List, Optional
 from mysql.connector import cursor
 import requests
-import sqlite3
-import textwrap
-import math
 import pandas as pd
 import sys
 from Analysis_FINAL import prediction
@@ -267,7 +264,7 @@ class MYSQLRivers:
     
     def __init__(self)-> None:
         
-        self.trigger = 0
+        
         self.connection = mysql.connector.connect(
         host = os.environ.get('host'), #'ec2-18-117-169-228.us-east-2.compute.amazonaws.com', #'127.0.0.1'
         port =  3310,
@@ -304,8 +301,8 @@ class MYSQLRivers:
                 else:                   
                     tabelle.append('Tabella_' + to_add)
 
-            cursor = self.connection.cursor()
             query = 'SET GLOBAL local_infile=1;'
+            cursor = self.connection.cursor()
             cursor.execute(query)
 
             for i in range(len(tabelle)):
@@ -334,23 +331,40 @@ class MYSQLRivers:
             path = path + 'predictions_folder/'
             os.chdir(path)
             files = list(os.listdir())
-            tabelle = ['pred_Adige_Q_mean', 'pred_Adige_W_mean', 'pred_Adige_WT_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_W_mean', 'pred_Isarco_WT_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_W_mean', 'pred_Talvera_WT_mean']
-            for i in range(len(tabelle)):
+            file_name = files[0]
+            if 'Adige' in file_name :
+                nome = 'Adige'
+            elif 'Isarco' in file_name:
+                nome = 'Isarco'
+            else:
+                nome = 'Talvera'
+            #tabelle = ['pred_Adige_Q_mean', 'pred_Adige_WT_mean', 'pred_Adige_W_mean', 'pred_Isarco_Q_mean', 'pred_Isarco_WT_mean', 'pred_Isarco_W_mean', 'pred_Talvera_Q_mean', 'pred_Talvera_WT_mean', 'pred_Talvera_W_mean']
+            tabelle = ['pred_{fiume}_Q_mean'.format(fiume = nome), 'pred_{fiume}_WT_mean'.format(fiume = nome), 'pred_{fiume}_W_mean'.format(fiume = nome)]
+            i = 0 
+            while (len(files)) > 0 :
 
-                components = tabelle[i].split('_')
-                fiile_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
+                #components = files[i].split('_')
+                #file_name = 'Tabella_'+components[1]+'-'+components[2]+'_mean'+'_prediction.csv'
+                file_name = files[0]
                 query = """LOAD DATA LOCAL INFILE '{path_and_file_name}'
                             INTO TABLE {table_name}
                             FIELDS TERMINATED BY ','
                             ENCLOSED BY '"'
                             LINES TERMINATED BY '\n'
                             IGNORE 1 LINES; 
-                        """.format(path_and_file_name = path + fiile_name, table_name = tabelle[i]) 
+                        """.format(path_and_file_name = path + file_name, table_name = tabelle[i]) 
                 cursor.execute(query)
-                print( 'Salvato il file: {file_name}!'.format(file_name = files[i]) )
+                print( 'Salvato il file: {file_name}!'.format(file_name = files[0]) )
 
-                os.remove( path+'{file_name}'.format(file_name = files[i]) )
-                print( 'Rimosso il file: {file_name}'.format(file_name = files[i]) )
+                os.remove( path+'{file_name}'.format(file_name = files[0]) )
+                print( 'Rimosso il file: {file_name}'.format(file_name = files[0]) )
+                files.remove(files[0])
+                i += 1 
+            
+            for tabella in tabelle:
+                query = ' delete from {nome_tabella} where Timestamp = null'.format(nome_tabella = tabella)
+                cursor.execute(query)
+            
 
             cursor.close()
 
@@ -462,37 +476,31 @@ class MYSQLRivers:
         
         #self.connection.close()
 
-    def make_predictions(self, river:str):
+    def make_predictions(self, fiume):
 
-        cursor = self.connection.cursor()
-
-        print('starting predictions')
-
-        if river == 'Adige':
-
-            tabella = 'Tabella_Adige'
-
-        elif river == 'Isarco':
-
-            tabella ='Tabella_Isarco'
-
-        elif river == 'Talvera':
-
-            tabella = 'Tabella_Talvera'
+        
 
         #tabelle = ['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
         variabili = ['Q_mean', 'W_mean', 'WT_mean']
 
-        for i in range(len(variabili)):
-                    
-            query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[i],  table_name = tabella)
-            df = pd.read_sql(query, con= self.connection) 
+        print('starting predictions')
 
-            prediction(modelname = tabella+'-'+variabili[i]+'_model', variable = variabili[i], river_name=tabella, dataframe = df)
-            print('prediction completed for {element}'.format(element=tabella+'-'+variabili[i]))
+        #for i in range(len(tabelle)):
+        for j in range(len(variabili)):
+            cursor = self.connection.cursor()
+            query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = fiume)
+                #df = pd.read_sql(query, con= self.connection) 
+            cursor.execute(query)
+            output = cursor.fetchall()
+            df = pd.DataFrame(output)
+            prediction(modelname = fiume +'-'+variabili[j]+'_model', variable = variabili[j], river_name= fiume, dataframe = df)
+            print('prediction completed for {element}'.format(element= fiume+'-'+variabili[j]))
 
-        #publisher_str('Previsioni completate, salvale!')
-
-        cursor.close()
-
+            cursor.close()
         
+        publisher_str('Previsioni completate, salvale!')
+        
+    
+        
+
+

@@ -8,29 +8,11 @@ import mysql.connector
 import pandas as pd 
 import numpy as np 
 import os 
-import pickle
-import datetime
-from pandas import *
-from pandas.plotting import lag_plot, autocorrelation_plot
-import matplotlib.pyplot as plt 
-from statsmodels.tsa.ar_model import AutoReg
-from statsmodels.graphics.tsaplots import plot_acf
-from sklearn.metrics import mean_squared_error
-from math import sqrt
 import mysql.connector
-from statsmodels.graphics.tsaplots import plot_pacf
-from statsmodels.tsa.arima_process import ArmaProcess
-from statsmodels.tsa.stattools import pacf
-from statsmodels.regression.linear_model import yule_walker
-from statsmodels.tsa.stattools import adfuller
 from mysql.connector import connection
-import seaborn as sns 
-from PIL import Image
 from streamlit_folium import folium_static
 import folium
-import json
-from bokeh.plotting import figure
-import joblib
+
 
 connection = mysql.connector.connect(
         host=  os.environ.get('host'), 
@@ -155,12 +137,56 @@ def analysis(data_set_name,variable_name_key, time):
     query = 'select * from pred_{name}_{variable} ORDER BY Timestamp DESC LIMIT 1;'.format(name =data_set_name, variable = diz_measures[variable_name_key])  #pred_Adige_Q_mean
     cursor.execute(query)
     output = cursor.fetchall()
+    
+   
+    if output == [] or output == 'None' :
+        st.write('It\'s too early for prediction...Waiting for new data!')
+        return 
+
     output = output[0]
-    output = output[diz_time[time]]
+    
+    output = list(output)
+    
+    
+    values = output[diz_time[time]]
+    
+    values = values.split('-')
+    if len(values) == 3:
+        
+        values = values[1:]
+        values[0] = '-' + values[0]
+    
+    
+    val_tit = values
+
+    
+    
+    new_y = []
+    
+    for el in values :
+        el = el.strip()
+        
+        new_y.append(float(el))
+        
+    print(new_y)    
+    #
+    xs = [df.index[-1] + diz_time[time] , df.index[-1] + diz_time[time]]
+    df.Timestamp = pd.to_datetime(df.Timestamp)
+    plt.plot(df[diz_measures[variable_name_key]][-50:], label = 'actual')
+    plt.plot(xs, new_y, label = 'forecast')
+    
+    plt.ylabel(diz_unit[variable_name_key])
+    plt.title('Predictions of {river_name}\'s {variable} in {time_correct}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = val_tit))
+    plt.legend()
+    plt.xticks([])
+    st.set_option('deprecation.showPyplotGlobalUse', False)
+    st.pyplot()
+    st.write('{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = val_tit ))
+
 
 prediction_interval = analysis(data_set_name,variable_name_key, time)
 
-st.write('{river_name}\'s {variable} in {time_correct}  will be in between {result}'.format(river_name = data_set_name,variable = variable_name_key, time_correct = time, result = prediction_interval))
+
 
 
 

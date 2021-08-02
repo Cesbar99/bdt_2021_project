@@ -1,5 +1,4 @@
 import os
-import time
 import paho.mqtt.client as mqtt 
 
 def publisher_str(stringa:str):

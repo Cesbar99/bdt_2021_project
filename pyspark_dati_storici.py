@@ -23,6 +23,7 @@ manager_mysql = MYSQLRivers()
 manager_mysql.create()
 
 
+
 def add_season(stringa):
     
     tempo = stringa.split() #
@@ -125,3 +126,4 @@ for i in range(len(ids)):
 publisher_str('Dati storici in arrivo! è ora di salvarli')
 
 sc.stop()
+

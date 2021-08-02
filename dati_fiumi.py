@@ -460,31 +460,39 @@ class MYSQLRivers:
         else:
             print('All tables already present, ready to get new data!')
         
-        self.connection.close()
+        #self.connection.close()
 
-    def make_predictions(self):
+    def make_predictions(self, river:str):
 
         cursor = self.connection.cursor()
 
-        tabelle = ['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
-        variabili = ['Q_mean', 'W_mean', 'WT_mean']
-
         print('starting predictions')
 
-        for i in range(len(tabelle)):
-            for j in range(len(variabili)):
-                
-                query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[j],  table_name = tabelle[i])
-                df = pd.read_sql(query, con= self.connection) 
+        if river == 'Adige':
 
-                prediction(modelname = tabelle[i]+'-'+variabili[j]+'_model', variable = variabili[j], river_name=tabelle[i], dataframe = df)
-                print('prediction completed for {element}'.format(element=tabelle[i]+'-'+variabili[j]))
+            tabella = 'Tabella_Adige'
+
+        elif river == 'Isarco':
+
+            tabella ='Tabella_Isarco'
+
+        elif river == 'Talvera':
+
+            tabella = 'Tabella_Talvera'
+
+        #tabelle = ['Tabella_Adige', 'Tabella_Isarco', 'Tabella_Talvera']
+        variabili = ['Q_mean', 'W_mean', 'WT_mean']
+
+        for i in range(len(variabili)):
+                    
+            query = 'SELECT Timestamp, {variable} from {table_name}'.format(variable = variabili[i],  table_name = tabella)
+            df = pd.read_sql(query, con= self.connection) 
+
+            prediction(modelname = tabella+'-'+variabili[i]+'_model', variable = variabili[i], river_name=tabella, dataframe = df)
+            print('prediction completed for {element}'.format(element=tabella+'-'+variabili[i]))
+
+        #publisher_str('Previsioni completate, salvale!')
 
         cursor.close()
 
-        publisher_str('Previsioni completate, salvale!')
         
-    
-        
-
-

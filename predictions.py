@@ -12,26 +12,73 @@ cursor = manager.connection.cursor()
 query = 'select Timestamp from Tabella_Adige ORDER BY Timestamp DESC LIMIT 1;'
 cursor.execute(query)
 output = cursor.fetchall()
-last_datetime =output[0][0]
+last_datetime_Adige =output[0][0]
+query = 'select Timestamp from Tabella_Isarco ORDER BY Timestamp DESC LIMIT 1;'
+cursor.execute(query)
+output = cursor.fetchall()
+last_datetime_Isarco =output[0][0]
+query = 'select Timestamp from Tabella_Talvera ORDER BY Timestamp DESC LIMIT 1;'
+cursor.execute(query)
+output = cursor.fetchall()
+last_datetime_Talvera =output[0][0]
 cursor.close()
-print(last_datetime)
+#print(last_datetime)
 
 while True:
-
+    
+    pred = False
     cursor = manager.connection.cursor()
+
     query = 'select Timestamp from Tabella_Adige ORDER BY Timestamp DESC LIMIT 1;'
     cursor.execute(query)
     output = cursor.fetchall()
-    current_date =output[0][0]
-    cursor.close()
+    current_date_adige =output[0][0]
+    
 
-    if current_date > last_datetime:
-        manager.make_predictions()
+    if current_date_adige > last_datetime_Adige:
+        manager.make_predictions('Adige')
         print('computing')
-        last_datetime = current_date
+        last_datetime_Adige = current_date_adige
+        pred = True
         print('done')
 
     else:
-        print('no new observations')
+        print('no new observations for Adige')
+
+    query = 'select Timestamp from Tabella_Isarco ORDER BY Timestamp DESC LIMIT 1;'
+    cursor.execute(query)
+    output = cursor.fetchall()
+    current_date_isarco =output[0][0]
+    
+
+    if current_date_isarco > last_datetime_Isarco:
+        manager.make_predictions('Isarco')
+        print('computing')
+        last_datetime_Isarco = current_date_isarco
+        pred = True
+        print('done')
+
+    else:
+        print('no new observations for Isarco')    
+
+    query = 'select Timestamp from Tabella_Talvera ORDER BY Timestamp DESC LIMIT 1;'
+    cursor.execute(query)
+    output = cursor.fetchall()
+    current_date_talvera =output[0][0]
+    
+    if current_date_talvera > last_datetime_Talvera:
+        manager.make_predictions('Talvera')
+        print('computing')
+        last_datetime_Talvera = current_date_talvera
+        pred = True
+        print('done')
+
+    else:
+        print('no new observations for Talvera')
+
+    cursor.close()
+
+    if pred:
+        publisher_str('Previsioni completate, salvale!')
     
     time.sleep(60)
